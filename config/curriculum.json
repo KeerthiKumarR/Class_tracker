@@ -1,0 +1,1041 @@
+{
+  "units": [
+    {
+      "unit_id": "DAA-1",
+      "week": 1,
+      "topic": "Lambdas I",
+      "content": [
+        "Lambda syntax [captures](params){ body }",
+        "Capture by value vs reference; mutable",
+        "Lambdas vs function pointers / functors",
+        "auto & generic lambdas",
+        "std::function"
+      ],
+      "classwork": [
+        "Sort a vector<int> in descending order using a lambda comparator",
+        "Use count_if with a lambda to count elements greater than K",
+        "Write a generic lambda add and verify it with int and double"
+      ],
+      "homework": [
+        "Sum a vector via for_each capturing an accumulator by reference",
+        "Store three lambdas in vector<function<int(int)>> and apply each",
+        "Write a lambda capturing a threshold by value to filter a vector"
+      ]
+    },
+    {
+      "unit_id": "DAA-2",
+      "week": 1,
+      "topic": "Lambdas II — uses & tricks",
+      "content": [
+        "Lambdas as std::sort comparators",
+        "for_each / count_if / find_if / remove_if",
+        "Capturing this; returning lambdas",
+        "mutable lambdas",
+        "Competitive-programming idioms"
+      ],
+      "classwork": [
+        "Sort vector<pair<int,int>> by second value then first via a lambda",
+        "Use find_if to return the first element greater than K",
+        "Use remove_if + erase to delete all odd numbers from a vector"
+      ],
+      "homework": [
+        "Print unordered_map entries sorted by count using a lambda",
+        "Sort strings by length then lexicographically with one lambda",
+        "Write a function that returns a lambda multiplying by a captured factor"
+      ]
+    },
+    {
+      "unit_id": "DAA-3",
+      "week": 1,
+      "topic": "STL Remastered I — containers",
+      "content": [
+        "vector / deque / list",
+        "stack / queue",
+        "set / multiset; map / multimap",
+        "unordered_map / unordered_set",
+        "Iterators & choosing a container"
+      ],
+      "classwork": [
+        "Remove duplicates from a vector using a set",
+        "Count word frequencies from input using unordered_map",
+        "Implement browser back/forward history using two stacks"
+      ],
+      "homework": [
+        "Compute a fixed-size sliding-window maximum using a deque",
+        "Maintain a sorted stream with a multiset and query the smallest",
+        "Group anagrams together using map<string, vector<string>>"
+      ]
+    },
+    {
+      "unit_id": "DAA-4",
+      "week": 1,
+      "topic": "STL Remastered II — algorithms",
+      "content": [
+        "sort / stable_sort with comparators",
+        "lower_bound / upper_bound / binary_search",
+        "unique / accumulate / max_element / next_permutation",
+        "priority_queue; pair / tuple; structured bindings",
+        "Performance idioms: reserve, emplace_back"
+      ],
+      "classwork": [
+        "Find the k-th largest element using a priority_queue",
+        "Binary-search a target in a sorted vector with lower_bound",
+        "Count distinct elements using sort + unique"
+      ],
+      "homework": [
+        "Merge k sorted vectors into one using a min-heap",
+        "Generate all permutations of a string with next_permutation",
+        "Answer range-sum queries using prefix sums (partial_sum)"
+      ]
+    },
+    {
+      "unit_id": "DAA-5",
+      "week": 1,
+      "topic": "DSA Basics Quick Revision",
+      "content": [
+        "Recursion: base / recur / combine",
+        "Call-stack dry-run",
+        "Linked list: traverse / insert / reverse",
+        "Timed practice set",
+        "Mistake log"
+      ],
+      "classwork": [
+        "Compute factorial and nCr recursively",
+        "Reverse a singly linked list iteratively",
+        "Print numbers 1..N and N..1 using recursion"
+      ],
+      "homework": [
+        "Fibonacci with memoization",
+        "Detect a cycle in a linked list (Floyd's algorithm)",
+        "Find the middle node of a linked list in one pass"
+      ]
+    },
+    {
+      "unit_id": "DAA-6",
+      "week": 2,
+      "topic": "Hashmaps Fundamentals",
+      "content": [
+        "Introduction to unordered_map, unordered_set",
+        "Hashing concepts & handling collisions",
+        "Basic frequency counting & lookups"
+      ],
+      "classwork": [
+        "LC1 Two Sum",
+        "Frequency of elements (GfG)",
+        "LC217 Contains Duplicate"
+      ],
+      "homework": [
+        "LC387 First Unique Character in a String",
+        "LC242 Valid Anagram",
+        "LC219 Contains Duplicate II"
+      ]
+    },
+    {
+      "unit_id": "DAA-7",
+      "week": 2,
+      "topic": "Hashmaps - Subarrays & Patterns",
+      "content": [
+        "Prefix sums combined with hashmaps",
+        "Counting subarrays with given sum",
+        "Variable sliding window with hashmaps"
+      ],
+      "classwork": [
+        "LC560 Subarray Sum Equals K",
+        "LC49 Group Anagrams",
+        "LC3 Longest Substring Without Repeating Characters"
+      ],
+      "homework": [
+        "LC974 Subarray Sums Divisible by K",
+        "LC128 Longest Consecutive Sequence",
+        "Largest subarray with 0 sum (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-8",
+      "week": 2,
+      "topic": "Heaps / Priority Queue Fundamentals",
+      "content": [
+        "Introduction to priority_queue in C++",
+        "Min-Heap vs Max-Heap mechanics",
+        "Heapify concept",
+        "Basic insertions and deletions"
+      ],
+      "classwork": [
+        "LC215 Kth Largest Element in an Array",
+        "Kth smallest element (GfG)",
+        "LC1046 Last Stone Weight"
+      ],
+      "homework": [
+        "LC703 Kth Largest Element in a Stream",
+        "LC973 K Closest Points to Origin",
+        "Minimum cost of ropes (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-9",
+      "week": 2,
+      "topic": "Advanced Heaps",
+      "content": [
+        "Multi-heap patterns (e.g., Running Median)",
+        "Merging patterns",
+        "Custom comparators with priority_queue"
+      ],
+      "classwork": [
+        "LC347 Top K Frequent Elements",
+        "LC23 Merge k Sorted Lists",
+        "LC295 Find Median from Data Stream"
+      ],
+      "homework": [
+        "LC378 Kth Smallest Element in a Sorted Matrix",
+        "LC692 Top K Frequent Words",
+        "LC451 Sort Characters By Frequency"
+      ]
+    },
+    {
+      "unit_id": "DAA-10",
+      "week": 2,
+      "topic": "Hashmaps & Heaps Combined",
+      "content": [
+        "Complex problems using both structures",
+        "Design problems introduction",
+        "Frequency maps pushed to heaps"
+      ],
+      "classwork": [
+        "LC767 Reorganize String",
+        "LC355 Design Twitter",
+        "LC895 Maximum Frequency Stack"
+      ],
+      "homework": [
+        "LC621 Task Scheduler",
+        "LC146 LRU Cache",
+        "LC432 All O one Data Structure"
+      ]
+    },
+    {
+      "unit_id": "DAA-11",
+      "week": 3,
+      "topic": "Trees & DFS traversals",
+      "content": [
+        "Node structure & building a tree",
+        "Recursive preorder, inorder, postorder",
+        "Dry-run of visit order"
+      ],
+      "classwork": [
+        "LC94 Binary Tree Inorder Traversal",
+        "LC144 Binary Tree Preorder Traversal",
+        "LC145 Binary Tree Postorder Traversal"
+      ],
+      "homework": [
+        "LC589 N-ary Tree Preorder Traversal",
+        "Count the total number of nodes recursively",
+        "Print all leaf nodes from left to right"
+      ]
+    },
+    {
+      "unit_id": "DAA-12",
+      "week": 3,
+      "topic": "Iterative traversal & BFS",
+      "content": [
+        "Iterative inorder (explicit stack)",
+        "Iterative preorder",
+        "BFS level order (queue)",
+        "Grouping nodes level by level"
+      ],
+      "classwork": [
+        "LC102 Binary Tree Level Order Traversal",
+        "LC199 Binary Tree Right Side View",
+        "LC94 Inorder Traversal (iterative)"
+      ],
+      "homework": [
+        "LC103 Binary Tree Zigzag Level Order Traversal",
+        "LC107 Binary Tree Level Order Traversal II",
+        "LC637 Average of Levels in Binary Tree"
+      ]
+    },
+    {
+      "unit_id": "DAA-13",
+      "week": 3,
+      "topic": "Height, Depth & Diameter",
+      "content": [
+        "Height vs depth",
+        "Maximum depth (post-order)",
+        "Diameter via height",
+        "TC / SC analysis"
+      ],
+      "classwork": [
+        "LC104 Maximum Depth of Binary Tree",
+        "LC543 Diameter of Binary Tree",
+        "LC111 Minimum Depth of Binary Tree"
+      ],
+      "homework": [
+        "LC559 Maximum Depth of N-ary Tree",
+        "Count the number of nodes at maximum depth",
+        "Check whether two trees have equal height"
+      ]
+    },
+    {
+      "unit_id": "DAA-14",
+      "week": 3,
+      "topic": "Balanced check & views",
+      "content": [
+        "Height-balanced definition",
+        "Bottom-up O(n) balance check",
+        "Symmetry preview",
+        "Tree views revisit"
+      ],
+      "classwork": [
+        "LC110 Balanced Binary Tree",
+        "LC101 Symmetric Tree",
+        "LC199 Binary Tree Right Side View"
+      ],
+      "homework": [
+        "LC100 Same Tree",
+        "LC965 Univalued Binary Tree",
+        "LC872 Leaf-Similar Trees"
+      ]
+    },
+    {
+      "unit_id": "DAA-15",
+      "week": 3,
+      "topic": "Advanced Traversals & Views",
+      "content": [
+        "Morris inorder traversal (O(1) space)",
+        "Vertical order traversal",
+        "Top view / bottom view",
+        "Boundary traversal"
+      ],
+      "classwork": [
+        "LC987 Vertical Order Traversal of a Binary Tree",
+        "Top view of a binary tree (GfG)",
+        "Boundary traversal of a binary tree (GfG)"
+      ],
+      "homework": [
+        "Morris inorder traversal (O(1) space) (GfG)",
+        "Bottom view of a binary tree (GfG)",
+        "Diagonal traversal of a binary tree (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-16",
+      "week": 4,
+      "topic": "Invert & Symmetric",
+      "content": [
+        "Invert / mirror a tree",
+        "Symmetric tree check",
+        "Mirror intuition",
+        "Recursive vs iterative"
+      ],
+      "classwork": [
+        "LC226 Invert Binary Tree",
+        "LC101 Symmetric Tree",
+        "LC100 Same Tree"
+      ],
+      "homework": [
+        "LC951 Flip Equivalent Binary Trees",
+        "Check if one tree is the mirror of another (GfG)",
+        "Convert a tree to its mirror in place (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-17",
+      "week": 4,
+      "topic": "Path Sum family",
+      "content": [
+        "Path sum (root -> leaf)",
+        "Path sum II (collect all paths)",
+        "Max path sum (any node to any node)",
+        "Propagating returns up the recursion"
+      ],
+      "classwork": [
+        "LC112 Path Sum",
+        "LC113 Path Sum II",
+        "LC124 Binary Tree Maximum Path Sum"
+      ],
+      "homework": [
+        "LC437 Path Sum III",
+        "LC129 Sum Root to Leaf Numbers",
+        "LC988 Smallest String Starting From Leaf"
+      ]
+    },
+    {
+      "unit_id": "DAA-18",
+      "week": 4,
+      "topic": "Lowest Common Ancestor",
+      "content": [
+        "Recursive LCA logic",
+        "Split-point intuition",
+        "Root-to-node path approach",
+        "Distance between nodes via LCA"
+      ],
+      "classwork": [
+        "LC236 Lowest Common Ancestor of a Binary Tree",
+        "LCA using root-to-node paths (GfG)",
+        "Distance between two nodes via LCA (GfG)"
+      ],
+      "homework": [
+        "LC1650 Lowest Common Ancestor III",
+        "LC1123 Lowest Common Ancestor of Deepest Leaves",
+        "Kth ancestor of a node in a tree (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-19",
+      "week": 4,
+      "topic": "Construct & Flatten",
+      "content": [
+        "Build from preorder + inorder (index map)",
+        "Build from inorder + postorder",
+        "Flatten to a linked list",
+        "Why traversal pairs determine structure"
+      ],
+      "classwork": [
+        "LC105 Construct Binary Tree from Preorder and Inorder",
+        "LC106 Construct Binary Tree from Inorder and Postorder",
+        "LC114 Flatten Binary Tree to Linked List"
+      ],
+      "homework": [
+        "LC889 Construct Binary Tree from Preorder and Postorder",
+        "LC1008 Construct BST from Preorder Traversal",
+        "LC426 Convert BST to Sorted Doubly Linked List"
+      ]
+    },
+    {
+      "unit_id": "DAA-20",
+      "week": 4,
+      "topic": "Serialize & Tree Utilities",
+      "content": [
+        "Serialize / deserialize a tree",
+        "Count nodes in a complete tree",
+        "All nodes at distance K",
+        "Root-to-leaf numbers"
+      ],
+      "classwork": [
+        "LC297 Serialize and Deserialize Binary Tree",
+        "LC222 Count Complete Tree Nodes",
+        "LC863 All Nodes Distance K in Binary Tree"
+      ],
+      "homework": [
+        "LC129 Sum Root to Leaf Numbers",
+        "LC662 Maximum Width of Binary Tree",
+        "LC116 Populating Next Right Pointers in Each Node"
+      ]
+    },
+    {
+      "unit_id": "DAA-21",
+      "week": 5,
+      "topic": "Search & Insert",
+      "content": [
+        "BST ordering invariant",
+        "Search in a BST",
+        "Insert into a BST",
+        "Recursive vs iterative"
+      ],
+      "classwork": [
+        "LC700 Search in a Binary Search Tree",
+        "LC701 Insert into a Binary Search Tree",
+        "Iterative BST search (GfG)"
+      ],
+      "homework": [
+        "Iterative BST insert (GfG)",
+        "Search keys within a range in a BST (GfG)",
+        "Count BST nodes lying in a given range (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-22",
+      "week": 5,
+      "topic": "Validate & Min Diff",
+      "content": [
+        "Validate BST (min/max range)",
+        "Inorder = sorted property",
+        "Minimum absolute difference",
+        "Find mode"
+      ],
+      "classwork": [
+        "LC98 Validate Binary Search Tree",
+        "LC530 Minimum Absolute Difference in BST",
+        "LC501 Find Mode in Binary Search Tree"
+      ],
+      "homework": [
+        "LC99 Recover Binary Search Tree",
+        "LC783 Minimum Distance Between BST Nodes",
+        "LC255 Verify Preorder Sequence in BST"
+      ]
+    },
+    {
+      "unit_id": "DAA-23",
+      "week": 5,
+      "topic": "Delete & Kth smallest",
+      "content": [
+        "Delete: three cases",
+        "Inorder successor",
+        "Kth smallest / largest"
+      ],
+      "classwork": [
+        "LC450 Delete Node in a BST",
+        "LC230 Kth Smallest Element in a BST",
+        "Kth largest element in a BST (GfG)"
+      ],
+      "homework": [
+        "LC669 Trim a Binary Search Tree",
+        "LC285 Inorder Successor in BST",
+        "Inorder predecessor in a BST (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-24",
+      "week": 5,
+      "topic": "LCA, Build & Iterator",
+      "content": [
+        "LCA in a BST (O(h))",
+        "Sorted array -> balanced BST",
+        "BST iterator (O(h) space)",
+        "Space trade-offs"
+      ],
+      "classwork": [
+        "LC235 Lowest Common Ancestor of a BST",
+        "LC108 Convert Sorted Array to Binary Search Tree",
+        "LC173 Binary Search Tree Iterator"
+      ],
+      "homework": [
+        "LC109 Convert Sorted List to Binary Search Tree",
+        "LC653 Two Sum IV - Input is a BST",
+        "LC938 Range Sum of BST"
+      ]
+    },
+    {
+      "unit_id": "DAA-25",
+      "week": 5,
+      "topic": "BST Advanced",
+      "content": [
+        "Two-sum on a BST",
+        "Range sum of BST",
+        "Trim a BST to a range",
+        "Convert to greater tree"
+      ],
+      "classwork": [
+        "LC653 Two Sum IV - Input is a BST",
+        "LC938 Range Sum of BST",
+        "LC669 Trim a Binary Search Tree"
+      ],
+      "homework": [
+        "LC538 Convert BST to Greater Tree",
+        "LC1382 Balance a Binary Search Tree",
+        "LC333 Largest BST Subtree"
+      ]
+    },
+    {
+      "unit_id": "DAA-26",
+      "week": 6,
+      "topic": "Greedy choice & intervals",
+      "content": [
+        "Greedy-choice property",
+        "Exchange argument",
+        "Activity selection",
+        "Sort-by-end-time pattern"
+      ],
+      "classwork": [
+        "N meetings in one room (GfG)",
+        "LC435 Non-overlapping Intervals",
+        "Maximum number of activities selected (GfG)"
+      ],
+      "homework": [
+        "LC452 Minimum Number of Arrows to Burst Balloons",
+        "LC646 Maximum Length of Pair Chain",
+        "Maximize meetings attended in one room (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-27",
+      "week": 6,
+      "topic": "Merge intervals & platforms",
+      "content": [
+        "Merge intervals",
+        "Insert interval",
+        "Minimum platforms",
+        "Sweep-line intuition"
+      ],
+      "classwork": [
+        "LC56 Merge Intervals",
+        "LC57 Insert Interval",
+        "Minimum number of platforms (GfG)"
+      ],
+      "homework": [
+        "LC986 Interval List Intersections",
+        "LC1094 Car Pooling",
+        "Maximum number of overlapping intervals (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-28",
+      "week": 6,
+      "topic": "Knapsack & job sequencing",
+      "content": [
+        "Fractional knapsack (value/weight ratio)",
+        "Job sequencing with deadlines",
+        "Fractional vs 0/1",
+        "Priority ordering"
+      ],
+      "classwork": [
+        "Fractional Knapsack (GfG)",
+        "Job Sequencing Problem (GfG)",
+        "Minimum cost to connect ropes (GfG)"
+      ],
+      "homework": [
+        "LC455 Assign Cookies",
+        "Huffman Encoding (GfG)",
+        "Minimum number of coins (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-29",
+      "week": 6,
+      "topic": "Jump family & failure cases",
+      "content": [
+        "Jump game (reachability & min jumps)",
+        "Gas station",
+        "Candy",
+        "When greedy fails"
+      ],
+      "classwork": [
+        "LC55 Jump Game",
+        "LC134 Gas Station",
+        "LC135 Candy"
+      ],
+      "homework": [
+        "LC45 Jump Game II",
+        "LC763 Partition Labels",
+        "Write-up: a coin system where greedy fails (counterexample)"
+      ]
+    },
+    {
+      "unit_id": "DAA-30",
+      "week": 6,
+      "topic": "Greedy — More Patterns",
+      "content": [
+        "Reorganize string",
+        "Task scheduler",
+        "Huffman-style merging",
+        "Priority-queue-driven greedy"
+      ],
+      "classwork": [
+        "LC767 Reorganize String",
+        "LC621 Task Scheduler",
+        "Minimum cost to connect ropes (GfG)"
+      ],
+      "homework": [
+        "Rearrange characters so that none are adjacent (GfG)",
+        "LC1353 Maximum Number of Events That Can Be Attended",
+        "LC860 Lemonade Change"
+      ]
+    },
+    {
+      "unit_id": "DAA-31",
+      "week": 7,
+      "topic": "DP intro & 1D",
+      "content": [
+        "Overlapping subproblems & optimal substructure",
+        "state / transition / base / order template",
+        "Fibonacci -> climbing stairs -> House robber"
+      ],
+      "classwork": [
+        "LC70 Climbing Stairs",
+        "LC198 House Robber",
+        "LC509 Fibonacci Number"
+      ],
+      "homework": [
+        "LC746 Min Cost Climbing Stairs",
+        "LC213 House Robber II",
+        "LC91 Decode Ways"
+      ]
+    },
+    {
+      "unit_id": "DAA-32",
+      "week": 7,
+      "topic": "Coin change family",
+      "content": [
+        "Coin change (minimum coins)",
+        "Coin change (count ways)",
+        "1D knapsack framing",
+        "Iteration order"
+      ],
+      "classwork": [
+        "LC322 Coin Change",
+        "LC518 Coin Change II",
+        "Minimum number of coins (GfG)"
+      ],
+      "homework": [
+        "LC377 Combination Sum IV",
+        "LC279 Perfect Squares",
+        "Number of ways to make change (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-33",
+      "week": 7,
+      "topic": "LIS / LCS lite",
+      "content": [
+        "LIS O(n^2) and O(n log n) idea",
+        "LCS introduction",
+        "Subsequence vs substring"
+      ],
+      "classwork": [
+        "LC300 Longest Increasing Subsequence",
+        "LC1143 Longest Common Subsequence",
+        "Longest Increasing Subsequence in O(n log n) (GfG)"
+      ],
+      "homework": [
+        "LC673 Number of Longest Increasing Subsequence",
+        "LC1035 Uncrossed Lines",
+        "Longest common substring (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-34",
+      "week": 7,
+      "topic": "Grid DP",
+      "content": [
+        "Unique paths & Minimum path sum",
+        "Obstacles",
+        "Rolling the DP to one row"
+      ],
+      "classwork": [
+        "LC62 Unique Paths",
+        "LC64 Minimum Path Sum",
+        "LC63 Unique Paths II"
+      ],
+      "homework": [
+        "LC120 Triangle",
+        "LC931 Minimum Falling Path Sum",
+        "LC221 Maximal Square"
+      ]
+    },
+    {
+      "unit_id": "DAA-35",
+      "week": 7,
+      "topic": "Subsequence DP",
+      "content": [
+        "Subset-sum counting",
+        "Partition into equal subsets",
+        "Non-adjacent selection"
+      ],
+      "classwork": [
+        "Subset Sum (GfG)",
+        "LC416 Partition Equal Subset Sum",
+        "LC91 Decode Ways"
+      ],
+      "homework": [
+        "Count of subsets with a given sum (GfG)",
+        "Maximum sum of non-adjacent elements (GfG)",
+        "LC740 Delete and Earn"
+      ]
+    },
+    {
+      "unit_id": "DAA-36",
+      "week": 8,
+      "topic": "0/1 Knapsack",
+      "content": [
+        "0/1 knapsack (take vs skip)",
+        "Subset-sum reduction",
+        "2D -> 1D optimization (backward iteration)"
+      ],
+      "classwork": [
+        "0/1 Knapsack (GfG)",
+        "LC416 Partition Equal Subset Sum",
+        "LC494 Target Sum"
+      ],
+      "homework": [
+        "Count subsets with a given difference (GfG)",
+        "LC1049 Last Stone Weight II",
+        "Minimum subset-sum difference (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-37",
+      "week": 8,
+      "topic": "Unbounded knapsack",
+      "content": [
+        "Unbounded knapsack",
+        "Rod cutting",
+        "Reuse-item iteration direction"
+      ],
+      "classwork": [
+        "Unbounded Knapsack (GfG)",
+        "Rod Cutting (GfG)",
+        "LC322 Coin Change"
+      ],
+      "homework": [
+        "LC518 Coin Change II",
+        "Maximum ribbon cut (GfG)",
+        "LC343 Integer Break"
+      ]
+    },
+    {
+      "unit_id": "DAA-38",
+      "week": 8,
+      "topic": "Edit distance",
+      "content": [
+        "Edit-distance recurrence",
+        "insert / delete / replace",
+        "DP-table dry-run"
+      ],
+      "classwork": [
+        "LC72 Edit Distance",
+        "LC583 Delete Operation for Two Strings",
+        "LC712 Minimum ASCII Delete Sum for Two Strings"
+      ],
+      "homework": [
+        "LC97 Interleaving String",
+        "LC115 Distinct Subsequences",
+        "LC161 One Edit Distance"
+      ]
+    },
+    {
+      "unit_id": "DAA-39",
+      "week": 8,
+      "topic": "LCS variants / Partition DP intro",
+      "content": [
+        "Shortest common supersequence",
+        "Longest palindromic subsequence",
+        "Matrix chain (intro)"
+      ],
+      "classwork": [
+        "LC1092 Shortest Common Supersequence",
+        "LC516 Longest Palindromic Subsequence",
+        "Matrix Chain Multiplication (GfG)"
+      ],
+      "homework": [
+        "LC5 Longest Palindromic Substring",
+        "LC647 Palindromic Substrings",
+        "LC1312 Minimum Insertion Steps to Make a String Palindrome"
+      ]
+    },
+    {
+      "unit_id": "DAA-40",
+      "week": 8,
+      "topic": "Partition / Interval DP",
+      "content": [
+        "Matrix chain multiplication",
+        "Palindrome partitioning II",
+        "Burst balloons",
+        "Split-on-last framing"
+      ],
+      "classwork": [
+        "Matrix Chain Multiplication (GfG)",
+        "LC132 Palindrome Partitioning II",
+        "LC312 Burst Balloons"
+      ],
+      "homework": [
+        "Boolean Parenthesization (GfG)",
+        "LC1547 Minimum Cost to Cut a Stick",
+        "LC1043 Partition Array for Maximum Sum"
+      ]
+    },
+    {
+      "unit_id": "DAA-41",
+      "week": 9,
+      "topic": "Representation & traversal",
+      "content": [
+        "Adjacency list",
+        "BFS template & DFS template",
+        "Connected components"
+      ],
+      "classwork": [
+        "LC200 Number of Islands",
+        "LC547 Number of Provinces",
+        "LC133 Clone Graph"
+      ],
+      "homework": [
+        "LC733 Flood Fill",
+        "LC695 Max Area of Island",
+        "LC1971 Find if Path Exists in Graph"
+      ]
+    },
+    {
+      "unit_id": "DAA-42",
+      "week": 9,
+      "topic": "Cycle & Bipartite",
+      "content": [
+        "Undirected cycle detection",
+        "Directed cycle detection",
+        "Bipartite 2-colouring"
+      ],
+      "classwork": [
+        "LC207 Course Schedule",
+        "LC785 Is Graph Bipartite?",
+        "Detect cycle in an undirected graph (GfG)"
+      ],
+      "homework": [
+        "Detect cycle in a directed graph (GfG)",
+        "LC886 Possible Bipartition",
+        "LC684 Redundant Connection"
+      ]
+    },
+    {
+      "unit_id": "DAA-43",
+      "week": 9,
+      "topic": "Topological sort",
+      "content": [
+        "Kahn's algorithm (BFS, in-degrees)",
+        "DFS finish-time ordering",
+        "Course-schedule ordering"
+      ],
+      "classwork": [
+        "LC210 Course Schedule II",
+        "Topological Sort (GfG)",
+        "Kahn's algorithm for topological sort (GfG)"
+      ],
+      "homework": [
+        "LC269 Alien Dictionary",
+        "LC2115 Find All Possible Recipes from Given Supplies",
+        "LC1462 Course Schedule IV"
+      ]
+    },
+    {
+      "unit_id": "DAA-44",
+      "week": 9,
+      "topic": "Weighted paths & MST",
+      "content": [
+        "Dijkstra",
+        "0/1 BFS (deque)",
+        "MST Kruskal / Prim overview"
+      ],
+      "classwork": [
+        "LC743 Network Delay Time",
+        "LC1631 Path With Minimum Effort",
+        "Dijkstra's shortest path (GfG)"
+      ],
+      "homework": [
+        "LC787 Cheapest Flights Within K Stops",
+        "LC1584 Min Cost to Connect All Points (MST)",
+        "0/1 BFS shortest path (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-45",
+      "week": 9,
+      "topic": "Graphs — Extra",
+      "content": [
+        "Bellman-Ford (negative edges)",
+        "Floyd-Warshall (all pairs)",
+        "Bridges / articulation preview",
+        "Grid / island variants"
+      ],
+      "classwork": [
+        "Bellman-Ford algorithm (GfG)",
+        "Floyd-Warshall all-pairs shortest path (GfG)",
+        "LC994 Rotting Oranges"
+      ],
+      "homework": [
+        "LC542 01 Matrix (multi-source BFS)",
+        "LC1091 Shortest Path in Binary Matrix",
+        "LC1192 Critical Connections in a Network (bridges, preview)"
+      ]
+    },
+    {
+      "unit_id": "DAA-46",
+      "week": 10,
+      "topic": "Tree DP",
+      "content": [
+        "Bottom-up subtree DP",
+        "Diameter via DP",
+        "House robber III",
+        "Max path sum revisited"
+      ],
+      "classwork": [
+        "LC543 Diameter of Binary Tree (via DP)",
+        "LC337 House Robber III",
+        "LC124 Binary Tree Maximum Path Sum"
+      ],
+      "homework": [
+        "LC968 Binary Tree Cameras",
+        "LC687 Longest Univalue Path",
+        "Maximum sum of non-adjacent nodes in a tree (GfG)"
+      ]
+    },
+    {
+      "unit_id": "DAA-47",
+      "week": 10,
+      "topic": "Backtracking foundations",
+      "content": [
+        "Backtracking template: choose / explore / un-choose",
+        "Subsets",
+        "Permutations",
+        "Combinations"
+      ],
+      "classwork": [
+        "LC78 Subsets",
+        "LC46 Permutations",
+        "LC77 Combinations"
+      ],
+      "homework": [
+        "LC90 Subsets II",
+        "LC39 Combination Sum",
+        "LC131 Palindrome Partitioning"
+      ]
+    },
+    {
+      "unit_id": "DAA-48",
+      "week": 10,
+      "topic": "Backtracking on grids & constraints",
+      "content": [
+        "Word search on a grid",
+        "N-Queens",
+        "Generate parentheses",
+        "Pruning the search"
+      ],
+      "classwork": [
+        "LC79 Word Search",
+        "LC51 N-Queens",
+        "LC22 Generate Parentheses"
+      ],
+      "homework": [
+        "LC37 Sudoku Solver",
+        "LC212 Word Search II",
+        "LC93 Restore IP Addresses"
+      ]
+    },
+    {
+      "unit_id": "DAA-49",
+      "week": 10,
+      "topic": "Two pointers & sliding window",
+      "content": [
+        "Fixed-size sliding window",
+        "Variable-size window",
+        "Two pointers on sorted arrays",
+        "Windows on strings"
+      ],
+      "classwork": [
+        "LC3 Longest Substring Without Repeating Characters",
+        "LC209 Minimum Size Subarray Sum",
+        "LC15 3Sum"
+      ],
+      "homework": [
+        "LC76 Minimum Window Substring",
+        "LC424 Longest Repeating Character Replacement",
+        "LC11 Container With Most Water"
+      ]
+    },
+    {
+      "unit_id": "DAA-50",
+      "week": 10,
+      "topic": "Mixed patterns capstone",
+      "content": [
+        "Identify the right paradigm",
+        "Reason from constraints to approach",
+        "BFS walkthrough",
+        "DP walkthrough"
+      ],
+      "classwork": [
+        "Classify five mixed problems by technique",
+        "LC994 Rotting Oranges (BFS) walkthrough",
+        "LC300 Longest Increasing Subsequence (DP) walkthrough"
+      ],
+      "homework": [
+        "LC207 Course Schedule (graph) end to end",
+        "LC236 Lowest Common Ancestor (tree) end to end",
+        "LC322 Coin Change (DP) end to end"
+      ]
+    }
+  ]
+}

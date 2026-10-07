@@ -1,0 +1,41 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python Cache & Bytecode
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.pytest_cache/
+*.log
+
+# Credentials & Secrets
+config/.env
+config/service_account.json
+*.pem
+*.key
+
+# Build Artifacts & Binaries
+build/
+dist/
+dmg_staging/
+*.dmg
+embedded_bin/
+*.spec
+
+# Audio Files & Recording Buffers
+*.mp3
+*.m4a
+*.wav
+*.recording
+*.tmp
+*.part
+*.crdownload
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*

@@ -116,11 +116,19 @@ def send_teacher_summary(
         if notes_for_teacher:
             body += "\n" + "\n".join(notes_for_teacher) + "\n"
 
-        return _send_email(sender, password, teacher_email, subject, body)
-    except Exception as e:
-        print(f"[WARN] send_teacher_summary failed: {e}")
-        return False
+        recipients = [teacher_email]
+        dev_email = cfg.get("DEVELOPER_EMAIL") or os.environ.get("DEVELOPER_EMAIL", "")
+        if dev_email and dev_email.strip() and dev_email.strip().lower() != teacher_email.strip().lower():
+            recipients.append(dev_email.strip())
 
+        success = True
+        for rec in recipients:
+            if rec:
+                ok = _send_email(sender, password, rec, subject, body)
+                if not ok:
+                    success = False
+        return success
+    except Exception as e:
         print(f"[WARN] send_teacher_summary failed: {e}")
         return False
 

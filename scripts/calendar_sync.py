@@ -56,7 +56,7 @@ def sync_google_calendar(days_ahead: int = 7):
         session = AuthorizedSession(creds)
 
         cal_ids = set()
-        teacher_email = config.get("TEACHER_EMAIL", "rvkeerthi99@gmail.com")
+        teacher_email = config.get("TEACHER_EMAIL", "aditya.prasad@msot.org")
         if teacher_email:
             cal_ids.add(teacher_email.strip())
 

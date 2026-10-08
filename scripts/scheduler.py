@@ -93,15 +93,28 @@ def load_schedule(purge_expired: bool = True):
 
 
 def get_ffmpeg_bin() -> str:
-    """Finds FFmpeg binary, prioritizing system authorized binaries to eliminate macOS TCC resets."""
+    """Finds FFmpeg binary, prioritizing system authorized binaries and falling back to bundled binary."""
+    # 1. System authorized Homebrew / system paths
     for p in ["/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", shutil.which("ffmpeg"), "/usr/bin/ffmpeg"]:
         if p and os.path.exists(p):
             return p
+    # 2. PyInstaller sys._MEIPASS bundle path
     bundle_bin = getattr(sys, '_MEIPASS', None)
     if bundle_bin:
         p = os.path.join(bundle_bin, "bin", "ffmpeg")
         if os.path.exists(p):
             return p
+    # 3. macOS App Bundle Frameworks/bin or MacOS/bin
+    if hasattr(sys, "executable") and sys.executable:
+        exe_dir = os.path.dirname(sys.executable)
+        for p in [
+            os.path.join(exe_dir, "..", "Frameworks", "bin", "ffmpeg"),
+            os.path.join(exe_dir, "bin", "ffmpeg"),
+            os.path.join(exe_dir, "_internal", "bin", "ffmpeg"),
+        ]:
+            if os.path.exists(p):
+                return os.path.abspath(p)
+    # 4. Project Root embedded
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     p_embedded = os.path.join(project_root, "embedded_bin", "ffmpeg")
     if os.path.exists(p_embedded):

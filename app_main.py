@@ -184,6 +184,8 @@ class ClassTrackerMenuBarApp(rumps.App):
             else:
                 self.recording_start_time = None
                 self.item_record_toggle.title = "🎙️ Start Recording Now..."
+                if not self.is_session_active and not self.is_syncing:
+                    self.current_status = "Active & Monitoring"
                 if self.is_syncing:
                     self.title = "🔄 Syncing..."
                 else:

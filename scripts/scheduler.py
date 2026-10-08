@@ -361,8 +361,8 @@ def run_scheduler(test_mode: bool = False):
                     print(f"[INFO] User skipped recording for '{class_name}'.")
                     continue
 
-                # Compute remaining recording duration dynamically from moment of user approval
-                duration = int(max(10, (end_dt - datetime.now()).total_seconds()))
+                # Compute remaining recording duration with a 60-minute overtime buffer so extended lectures are never cut off
+                duration = int(max(10, (end_dt - datetime.now()).total_seconds())) + 3600
                 timestamp_str = start_dt.strftime("%Y-%m-%d")
                 safe_name = class_name.replace(" ", "_").replace("(", "").replace(")", "")
                 audio_filename = f"{safe_name}_{timestamp_str}.mp3"

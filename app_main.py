@@ -266,12 +266,11 @@ class ClassTrackerMenuBarApp(rumps.App):
             if active_event:
                 # Active class is happening right now - start immediately without prompting
                 class_title = active_event.get("title") or active_event.get("name") or "DAA Lecture"
-                end_time = datetime.strptime(active_event.get("end_time"), "%H:%M").time()
-                class_date = datetime.strptime(active_event.get("date"), "%Y-%m-%d").date()
-                end_dt = datetime.combine(class_date, end_time)
-                duration_secs = int(max(60, (end_dt - now).total_seconds()))
+                end_time_str = active_event.get("end_time", "end")
+                # Set 3-hour safety cap so the teacher can teach overtime (e.g. 66m, 75m, 90m) without cutoff
+                duration_secs = 10800
 
-                rumps.notification("Class Tracker", "Recording Started", f"Now recording {class_title} until {active_event.get('end_time')}")
+                rumps.notification("Class Tracker", "Recording Started", f"Now recording {class_title}. Click 'Stop Recording' when class finishes.")
                 threading.Thread(
                     target=self._run_manual_session,
                     args=(class_title, duration_secs),
@@ -282,7 +281,7 @@ class ClassTrackerMenuBarApp(rumps.App):
                     default_title = schedule[0].get("title") or schedule[0].get("name") or "DAA Lecture"
 
                 response = rumps.Window(
-                    message="Enter lecture topic or name to start recording immediately:",
+                    message="Enter lecture topic or name to start recording immediately:\n(Recording will continue until you click 'Stop Recording')",
                     title="🎙️ Manual Class Recording",
                     default_text=default_title,
                     ok="Start Recording",
@@ -294,7 +293,7 @@ class ClassTrackerMenuBarApp(rumps.App):
                     manual_title = response.text.strip() or "DAA_Lecture"
                     threading.Thread(
                         target=self._run_manual_session,
-                        args=(manual_title, 5400),  # Default 90 minutes max duration
+                        args=(manual_title, 10800),  # 3 hours safety ceiling
                         daemon=True
                     ).start()
 
@@ -306,7 +305,8 @@ class ClassTrackerMenuBarApp(rumps.App):
             start_time = datetime.strptime(event.get("start_time"), "%H:%M").time()
             end_time = datetime.strptime(event.get("end_time"), "%H:%M").time()
             end_dt = datetime.combine(class_date, end_time)
-            duration_secs = int(max(60, (end_dt - datetime.now()).total_seconds()))
+            # Add 60-minute overtime buffer so lectures that run past scheduled time are never cut off
+            duration_secs = int(max(60, (end_dt - datetime.now()).total_seconds())) + 3600
 
             class_title = event.get("title") or event.get("name") or "DAA Lecture"
 

@@ -56,9 +56,12 @@ def sync_google_calendar(days_ahead: int = 7):
         session = AuthorizedSession(creds)
 
         cal_ids = set()
-        teacher_email = config.get("TEACHER_EMAIL", "aditya.prasad@msot.org")
-        if teacher_email:
-            cal_ids.add(teacher_email.strip())
+        for key in ["TEACHER_EMAIL", "DEVELOPER_EMAIL", "GMAIL_SENDER", "CALENDAR_ID"]:
+            val = config.get(key, "")
+            if val:
+                for email in val.split(","):
+                    if email.strip():
+                        cal_ids.add(email.strip())
 
         # 1. Get all accessible calendars from calendarList
         cal_list_resp = session.get("https://www.googleapis.com/calendar/v3/users/me/calendarList")

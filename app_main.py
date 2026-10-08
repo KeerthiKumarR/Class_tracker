@@ -122,7 +122,7 @@ class ClassTrackerMenuBarApp(rumps.App):
             except Exception as e:
                 print(f"[WARN] Periodic recovery note: {e}")
 
-            time.sleep(60)
+            time.sleep(15)
 
     @rumps.timer(1)
     def main_thread_ui_and_schedule_tick(self, _):

@@ -92,10 +92,10 @@ def _prepare_transcript_for_audit(transcript: str, unit: Dict[str, Any], max_wor
     # 2. Break transcript into sentence-sized chunks (~50 words each)
     chunks = []
     chunk_size = 50
-    for i in range(0, len(words), chunk_size):
+    for chunk_idx, i in enumerate(range(0, len(words), chunk_size)):
         chunk_text = " ".join(words[i:i + chunk_size])
         score = sum(1 for kw in target_terms if kw in chunk_text.lower())
-        chunks.append((i, chunk_text, score))
+        chunks.append((chunk_idx, chunk_text, score))
 
     # 3. Always include head (~800 words), tail (~400 words), and all high-scoring problem/concept chunks
     selected_indices = set(range(0, min(len(chunks), 16)))  # First ~800 words
@@ -112,7 +112,7 @@ def _prepare_transcript_for_audit(transcript: str, unit: Dict[str, Any], max_wor
         selected_indices.add(idx)
 
     # Assemble selected chunks in original chronological order
-    final_chunks = [chunks[i][1] for i in sorted(selected_indices)]
+    final_chunks = [chunks[i][1] for i in sorted(selected_indices) if i < len(chunks)]
     return "\n\n".join(final_chunks)
 
 

@@ -305,8 +305,8 @@ class ClassTrackerMenuBarApp(rumps.App):
             start_time = datetime.strptime(event.get("start_time"), "%H:%M").time()
             end_time = datetime.strptime(event.get("end_time"), "%H:%M").time()
             end_dt = datetime.combine(class_date, end_time)
-            # Add 60-minute overtime buffer so lectures that run past scheduled time are never cut off
-            duration_secs = int(max(60, (end_dt - datetime.now()).total_seconds())) + 3600
+            # Calculate exact remaining duration so recording automatically stops at the scheduled calendar end time
+            duration_secs = int(max(60, (end_dt - datetime.now()).total_seconds()))
 
             class_title = event.get("title") or event.get("name") or "DAA Lecture"
 

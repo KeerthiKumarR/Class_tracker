@@ -250,6 +250,13 @@ def recover_pending_audio(watch_folder: str, config: dict, sheet: SheetClient, p
     valid_exts = (".mp3", ".m4a", ".wav")
     for fname in os.listdir(watch_folder):
         if fname.endswith((".recording", ".tmp", ".part", ".crdownload")):
+            fpath = os.path.join(watch_folder, fname)
+            # Automatically clean up abandoned temp recording files older than 2 hours if not active
+            if os.path.isfile(fpath) and (time.time() - os.path.getmtime(fpath) > 7200) and not is_file_locked_or_recording(fpath):
+                try:
+                    os.remove(fpath)
+                except Exception:
+                    pass
             continue
         fpath = os.path.join(watch_folder, fname)
         if os.path.isfile(fpath) and fname.lower().endswith(valid_exts):

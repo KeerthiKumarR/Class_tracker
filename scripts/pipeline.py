@@ -242,6 +242,17 @@ def process_file(
     print(f"[INFO] 4/4 Auditing coverage against unit: {matched_unit_id} - {matched_unit.get('topic', '')} ...")
     result = match_topic(client, model, matched_unit, transcript, previous_cumulative_percent=prior_cumulative)
 
+    # Deterministic Progression Guardrail:
+    # Enforce cumulative math (Prior + Today) so LLM arithmetic hallucinations never slip through
+    today_cov = result.get("percent_covered_today", 0)
+    calculated_cumulative = min(100, max(today_cov, prior_cumulative + today_cov))
+    result["percent_complete_cumulative"] = calculated_cumulative
+
+    if calculated_cumulative >= 90 and not result.get("left_over"):
+        result["status"] = "Completed"
+    elif calculated_cumulative > 0 or result.get("left_over"):
+        result["status"] = "In Progress"
+
     # 6. Display proposed values
     print("\n" + "=" * 65)
     print("📋 PROPOSED SHEET UPDATES")

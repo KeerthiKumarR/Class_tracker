@@ -256,6 +256,25 @@ def process_file(
     # Merge newly solved problems & notes with prior session for multi-session updates
     if prior_cumulative > 0:
         existing_details = sheet.get_existing_details(row_number)
+        prior_left_over = existing_details.get("left_over", "")
+
+        # If previous session had left over topics, check if today's continuation addressed them
+        if prior_left_over:
+            prior_items = [item.strip() for item in prior_left_over.split(",") if item.strip()]
+            today_cw_text = f"{result.get('classwork_done') or ''} {result.get('notes') or ''}".lower()
+            remaining_left_over = []
+            for item in prior_items:
+                clean_term = item.split("(")[0].strip().lower()
+                if clean_term and clean_term in today_cw_text:
+                    continue  # Successfully taught in this continuation session
+                remaining_left_over.append(item)
+            result["left_over"] = ", ".join(remaining_left_over)
+
+        # If all prior leftovers are resolved or cumulative >= 90, mark unit Completed
+        if not result.get("left_over") and (prior_cumulative + today_cov >= 75):
+            result["percent_complete_cumulative"] = 100
+            result["status"] = "Completed"
+
         if existing_details.get("classwork"):
             existing_cw = [c.strip() for c in existing_details["classwork"].split(",") if c.strip()]
             new_cw = [c.strip() for c in (result.get("classwork_done") or "").split(",") if c.strip()]

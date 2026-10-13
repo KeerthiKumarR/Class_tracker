@@ -139,9 +139,3 @@ graph TD
 | **Phase 2** | Web Ingestion Prototype | Lightweight web interface (Next.js/FastAPI) supporting syllabus PDF upload and Groq/Qwen-powered curriculum JSON extraction. |
 | **Phase 3** | Pairing Service & Cloud Sync | Implement pairing token exchange, user authentication (Google OAuth), and one-click cloud sheet linking. |
 | **Phase 4** | Web Dashboard & Cohort Analytics | Instructor dashboard displaying live syllabus completion progress bars, recent class transcripts, and student assignments. |
-
----
-
-## 6. Open Considerations & Feedback Requested
-- **Google Drive Integration:** Should the web portal auto-provision a new Google Sheet directly in the instructor's Google Drive via OAuth, or accept an existing Google Sheet URL?
-- **Document Formats:** What document formats are most commonly provided by faculty (PDF, Microsoft Word DOCX, or Excel)?

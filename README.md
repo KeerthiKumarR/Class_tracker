@@ -69,3 +69,9 @@ Copy `config/.env.example` to `config/.env` and supply:
 - **Zero-Instruction Protection**: 0% progress or casual opening banter is blocked from mutating spreadsheet rows.
 - **Multi-Chunk Deduplication**: 60–90+ minute lectures are speech-compressed and sliced into 10-minute cached segments.
 
+---
+
+## 🗺️ Product Roadmap & Proposals
+
+- **[Feature Proposal: Web Onboarding Portal & Automated Curriculum Ingestion](docs/proposals/FEATURE_WEB_PORTAL_ONBOARDING.md)**: Architecture proposal for zero-recompile universal client pairing, drag-and-drop syllabus PDF ingestion, and multi-tenant teacher workspaces.
+

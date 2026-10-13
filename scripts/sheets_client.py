@@ -143,6 +143,25 @@ class SheetClient:
             pass
         return 0
 
+    def get_prior_today_covered(self, row_number: int) -> int:
+        """Reads existing session Covered % from Column L (1-indexed col 12) if available."""
+        try:
+            def _op():
+                return self.ws.cell(row_number, 12).value
+
+            val = self._execute_with_retry(_op)
+            if val is not None and str(val).strip():
+                clean_str = str(val).replace("%", "").strip()
+                parsed = float(clean_str)
+                if parsed <= 1.0 and "%" not in str(val):
+                    return int(round(parsed * 100))
+                elif parsed > 100:
+                    return min(100, int(round(parsed / 100)))
+                return int(round(parsed))
+        except Exception:
+            pass
+        return 0
+
     def get_existing_details(self, row_number: int) -> Dict[str, str]:
         """Reads existing Left Over (Col M / 13), Classwork (Col O / 15) and Notes (Col Q / 17) for multi-session appending."""
         try:

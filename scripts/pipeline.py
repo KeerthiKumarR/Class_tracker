@@ -237,6 +237,7 @@ def process_file(
 
 
     prior_cumulative = sheet.get_prior_cumulative(row_number)
+    prior_today_covered = sheet.get_prior_today_covered(row_number) if already_taught_today else 0
 
     # 5. Audit topic against curriculum content/classwork/homework
     print(f"[INFO] 4/4 Auditing coverage against unit: {matched_unit_id} - {matched_unit.get('topic', '')} ...")
@@ -247,6 +248,10 @@ def process_file(
     today_cov = result.get("percent_covered_today", 0)
     calculated_cumulative = min(100, max(today_cov, prior_cumulative + today_cov))
     result["percent_complete_cumulative"] = calculated_cumulative
+
+    # Accumulate today's coverage if multiple sessions occur on the same day
+    if already_taught_today:
+        result["percent_covered_today"] = min(100, max(today_cov, prior_today_covered + today_cov))
 
     if calculated_cumulative >= 90 and not result.get("left_over"):
         result["status"] = "Completed"
@@ -274,6 +279,8 @@ def process_file(
         if not result.get("left_over") and (prior_cumulative + today_cov >= 75):
             result["percent_complete_cumulative"] = 100
             result["status"] = "Completed"
+            if already_taught_today and prior_today_covered > 0:
+                result["percent_covered_today"] = 100
 
         if existing_details.get("classwork"):
             existing_cw = [c.strip() for c in existing_details["classwork"].split(",") if c.strip()]

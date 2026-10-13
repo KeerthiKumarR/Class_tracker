@@ -16,7 +16,7 @@ from dotenv import dotenv_values
 
 from sheets_client import SheetClient
 from pipeline import process_file
-from calendar_sync import sync_google_calendar
+from calendar_sync import sync_google_calendar, is_target_course_event
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = getattr(sys, '_MEIPASS', os.path.dirname(HERE))
@@ -66,7 +66,19 @@ def load_schedule(purge_expired: bool = True):
     valid_items = []
     changed = False
 
+    try:
+        cfg = load_config()
+        course_filter = cfg.get("COURSE_FILTER")
+    except Exception:
+        course_filter = None
+
     for item in items:
+        # 1. Filter out non-target courses (e.g. DSA, GenAI, IT)
+        item_title = item.get("title") or item.get("name") or ""
+        if not is_target_course_event(item_title, course_filter=course_filter):
+            changed = True
+            continue
+
         target_date_str = item.get("date")
         end_time_str = item.get("end_time")
         # If it has a specific calendar date and end time, check if it already ended

@@ -37,9 +37,49 @@ def get_service_account_path(config: dict) -> str:
     return sa_path
 
 
+import re
+
+def is_target_course_event(summary: str, course_filter: Optional[str] = None) -> bool:
+    """Checks if a calendar event title/summary corresponds to the target course (DAA).
+    
+    Specifically avoids matching unrelated courses such as:
+    - Data Structure and Algorithms (DSA)
+    - GenAI
+    - Essentials of Information Technology
+    - Weekly Review / Non-lecture meetings
+    """
+    if not summary or not summary.strip():
+        return False
+    
+    s = summary.strip().lower()
+
+    if course_filter:
+        keywords = [k.strip().lower() for k in course_filter.split(",") if k.strip()]
+        for kw in keywords:
+            if kw and re.search(r"\b" + re.escape(kw) + r"\b", s):
+                return True
+        return False
+
+    # Exclude other subjects even if they contain the word "Algorithms"
+    if "data structure" in s or re.search(r"\bdsa\b", s):
+        # Exclude unless DAA is explicitly also in the title
+        if not re.search(r"\bdaa\b", s):
+            return False
+
+    # Positive match for DAA
+    if re.search(r"\bdaa\b", s):
+        return True
+
+    # Positive match for full title "Design & Analysis of Algorithm(s)"
+    if re.search(r"design\s*(&|and)\s*analysis\s*of\s*algorithms?", s):
+        return True
+
+    return False
+
+
 def sync_google_calendar(days_ahead: int = 7):
     """Fetches upcoming events from all calendars shared with the service account
-    and updates config/schedule.json automatically.
+    and updates config/schedule.json automatically with DAA class events only.
     
     Returns: (bot_email, synced_events_list)
     """
@@ -79,7 +119,9 @@ def sync_google_calendar(days_ahead: int = 7):
         time_min = (now - timedelta(hours=2)).isoformat()
         time_max = (now + timedelta(days=days_ahead)).isoformat()
 
+        course_filter = config.get("COURSE_FILTER")
         synced_events = []
+        seen_keys = set()
 
         for cal_id in cal_ids:
             events_url = f"https://www.googleapis.com/calendar/v3/calendars/{cal_id}/events"
@@ -101,6 +143,10 @@ def sync_google_calendar(days_ahead: int = 7):
                 if not summary:
                     continue
 
+                # Filter strictly for DAA classes
+                if not is_target_course_event(summary, course_filter=course_filter):
+                    continue
+
                 start_info = item.get("start", {})
                 end_info = item.get("end", {})
 
@@ -115,6 +161,16 @@ def sync_google_calendar(days_ahead: int = 7):
                     start_dt = datetime.fromisoformat(start_iso)
                     end_dt = datetime.fromisoformat(end_iso)
 
+                    event_key = (
+                        start_dt.strftime("%Y-%m-%d"),
+                        start_dt.strftime("%H:%M"),
+                        end_dt.strftime("%H:%M"),
+                        summary.lower(),
+                    )
+                    if event_key in seen_keys:
+                        continue
+                    seen_keys.add(event_key)
+
                     event_entry = {
                         "name": summary,
                         "title": summary,
@@ -128,12 +184,14 @@ def sync_google_calendar(days_ahead: int = 7):
                     }
                     synced_events.append(event_entry)
 
+        synced_events.sort(key=lambda x: (x.get("date", ""), x.get("start_time", "")))
+
         data_dir = os.path.expanduser("~/.classtracker/config")
         os.makedirs(data_dir, exist_ok=True)
         schedule_path = os.path.join(data_dir, "schedule.json")
         with open(schedule_path, "w", encoding="utf-8") as f:
             json.dump(synced_events, f, indent=2)
-        print(f"[SUCCESS] 📅 Synced {len(synced_events)} event(s) from Google Calendar into {schedule_path}!")
+        print(f"[SUCCESS] 📅 Synced {len(synced_events)} DAA event(s) from Google Calendar into {schedule_path}!")
 
         return (bot_email, synced_events)
 

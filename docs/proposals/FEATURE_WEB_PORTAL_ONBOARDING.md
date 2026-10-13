@@ -70,6 +70,18 @@ graph TD
 * **Dynamic Calendar Filtering:** The desktop client only monitors classes matching the instructor’s registered course tags (e.g. `DAA` vs. `DSA`), preventing accidental cross-course recording.
 * **Role-Based Access:** Teaching assistants (TAs) or academic directors can be invited to view cohort progression without accessing teacher Mac credentials.
 
+### Pillar D: 1-Click Google OAuth & Teaching Calendar Selector
+* **Elimination of Service Accounts:** Completely eliminates manual Google Cloud Service Account creation, JSON keys, and bot email sharing via standard 1-click **"Sign in with Google"** (OAuth 2.0).
+* **Smart Calendar Discovery:**
+  - Upon authentication, queries the instructor's accessible Google Calendar List (Primary account, university timetables, shared department calendars).
+  - Auto-selects the **Primary Calendar** by default (90% of academic faculty use cases).
+  - Provides a single-click dropdown selector for institutional sub-calendars (e.g. *MSOT Department Schedule*).
+* **Live Schedule Preview:** Displays an immediate visual preview of matched course lectures (e.g., *Wed 10:50 AM DAA*, *Fri 2:25 PM DAA*) with personal events filtered out before the instructor clicks "Confirm".
+
+### Pillar E: Zero-Secret Desktop Architecture (Server-Side Proxy)
+* **No Client-Side Keys:** The macOS desktop app never bundles or stores Google Service Account private keys, eliminating reverse-engineering risks.
+* **Secure Web Proxying:** The desktop client performs local audio capture and transcription, then sends structured session results via HTTPS to the Web API. The cloud backend executes the authenticated Google Sheets updates and email dispatches.
+
 ---
 
 ## 4. API Contract & Data Models

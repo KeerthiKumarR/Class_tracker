@@ -253,6 +253,18 @@ def process_file(
     elif calculated_cumulative > 0 or result.get("left_over"):
         result["status"] = "In Progress"
 
+    # Merge newly solved problems & notes with prior session for multi-session updates
+    if prior_cumulative > 0:
+        existing_details = sheet.get_existing_details(row_number)
+        if existing_details.get("classwork"):
+            existing_cw = [c.strip() for c in existing_details["classwork"].split(",") if c.strip()]
+            new_cw = [c.strip() for c in (result.get("classwork_done") or "").split(",") if c.strip()]
+            merged_cw = list(dict.fromkeys(existing_cw + new_cw))
+            if merged_cw:
+                result["classwork_done"] = ", ".join(merged_cw)
+        if existing_details.get("notes") and result.get("notes") and result["notes"] not in existing_details["notes"]:
+            result["notes"] = f"{existing_details['notes']} (Part 2: {result['notes']})"
+
     # 6. Display proposed values
     print("\n" + "=" * 65)
     print("📋 PROPOSED SHEET UPDATES")

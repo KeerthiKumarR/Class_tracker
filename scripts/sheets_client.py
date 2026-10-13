@@ -143,6 +143,17 @@ class SheetClient:
             pass
         return 0
 
+    def get_existing_details(self, row_number: int) -> Dict[str, str]:
+        """Reads existing Classwork (Col O / 15) and Notes (Col Q / 17) for multi-session appending."""
+        try:
+            def _op():
+                cw = self.ws.cell(row_number, 15).value or ""
+                notes = self.ws.cell(row_number, 17).value or ""
+                return {"classwork": str(cw).strip(), "notes": str(notes).strip()}
+            return self._execute_with_retry(_op)
+        except Exception:
+            return {"classwork": "", "notes": ""}
+
     def update_progression(
         self,
         row_number: int,

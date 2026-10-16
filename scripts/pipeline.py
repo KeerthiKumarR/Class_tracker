@@ -197,7 +197,7 @@ def process_file(
 
     # 4. Find row in Google Sheet
     print(f"[INFO] 3/4 Locating Unit ID '{matched_unit_id}' in Google Sheet...")
-    row_number, _ = sheet.find_row_by_unit_id(matched_unit_id)
+    row_number, _ = sheet.find_row_by_unit_id(matched_unit_id, topic=matched_unit.get("topic"))
     if row_number is None:
         msg = f"Unit ID '{matched_unit_id}' does not exist in Column A of the Google Sheet."
         print(f"[SKIP] {msg}")
@@ -388,7 +388,8 @@ def process_file(
     if recap_detected and recap_units:
         for prev_uid in recap_units:
             try:
-                prev_row, _ = sheet.find_row_by_unit_id(prev_uid)
+                prev_unit_obj = next((u for u in curriculum if u["unit_id"].lower() == prev_uid.lower()), None)
+                prev_row, _ = sheet.find_row_by_unit_id(prev_uid, topic=prev_unit_obj.get("topic") if prev_unit_obj else None)
                 if prev_row is not None and prev_row != row_number:
                     prev_prior_pct = sheet.get_prior_cumulative(prev_row)
                     # If previous unit was left unfinished (< 100%)

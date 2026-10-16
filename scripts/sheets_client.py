@@ -88,23 +88,52 @@ class SheetClient:
                     pass
         raise RuntimeError(f"Google Sheets operation failed after 3 attempts. Error: {last_error}")
 
-    def find_row_by_unit_id(self, unit_id: str) -> Tuple[Optional[int], Optional[Dict[str, Any]]]:
-        """Finds the row number (1-indexed) in the sheet matching unit_id in Column A."""
+    def find_row_by_unit_id(self, unit_id: str, topic: Optional[str] = None) -> Tuple[Optional[int], Optional[Dict[str, Any]]]:
+        """Finds the row number (1-indexed) in the sheet matching unit_id or topic."""
+        import re
+
         def _op():
             all_values = self.ws.get_all_values()
             if not all_values:
                 return None, None
 
-            headers = all_values[0]
-            target = unit_id.strip().lower()
+            # Detect header row dynamically (supports header on Row 1, Row 3, etc.)
+            header_idx = 0
+            for i, r in enumerate(all_values[:5]):
+                if any(str(cell).strip().lower() in ("topic", "unit id") for cell in r):
+                    header_idx = i
+                    break
 
-            for idx, row in enumerate(all_values[1:], start=2):
+            headers = all_values[header_idx]
+            target = unit_id.strip().lower()
+            target_topic = topic.strip().lower() if topic else ""
+
+            # 1. Exact match in Column A (e.g. 'DAA-18' or 'UNIT-2')
+            for idx, row in enumerate(all_values[header_idx + 1:], start=header_idx + 2):
                 if not row:
                     continue
                 col_a_val = str(row[0]).strip().lower()
                 if col_a_val == target:
                     row_dict = {headers[i]: row[i] if i < len(row) else "" for i in range(len(headers))}
                     return idx, row_dict
+
+            # 2. Match by Topic in Column C (3rd column) if topic is provided
+            if target_topic:
+                for idx, row in enumerate(all_values[header_idx + 1:], start=header_idx + 2):
+                    if len(row) > 2 and row[2].strip():
+                        sheet_topic = row[2].strip().lower()
+                        if sheet_topic == target_topic or target_topic in sheet_topic or sheet_topic in target_topic:
+                            row_dict = {headers[i]: row[i] if i < len(row) else "" for i in range(len(headers))}
+                            return idx, row_dict
+
+            # 3. Numeric index offset fallback (e.g. DAA-18 -> index 18 -> Row 21)
+            num_match = re.search(r"\d+", unit_id)
+            if num_match:
+                cand_row = int(num_match.group()) + header_idx + 1
+                if cand_row <= len(all_values):
+                    row = all_values[cand_row - 1]
+                    row_dict = {headers[i]: row[i] if i < len(row) else "" for i in range(len(headers))}
+                    return cand_row, row_dict
 
             return None, None
 

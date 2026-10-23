@@ -132,17 +132,18 @@ def process_file(
         _archive_or_delete_file(audio_path, config, processed_folder)
         return {"success": False, "reason": "empty_transcript", "message": msg}
 
-    # Check for Low Audio Quality / Short Fragment (under 150 words)
+    # Check for Low Audio Quality / Short Fragment (configurable via MIN_TRANSCRIPT_WORDS, default 30)
     words = transcript.strip().split()
     word_count = len(words)
-    if word_count < 150:
-        msg = f"Low audio length/quality detected: transcript has only {word_count} words (< 150 words threshold). Skipping matching and sheet updates."
+    min_word_threshold = int(config.get("MIN_TRANSCRIPT_WORDS", 30))
+    if word_count < min_word_threshold:
+        msg = f"Low audio length/quality detected: transcript has only {word_count} words (< {min_word_threshold} words threshold). Skipping matching and sheet updates."
         print(f"[WARN] {msg}")
         send_developer_alert(
             message=msg,
             filename=filename,
             config=config,
-            warnings=[f"Transcript word count: {word_count} (minimum required: 150)"],
+            warnings=[f"Transcript word count: {word_count} (minimum required: {min_word_threshold})"],
         )
         # Clean up or archive low quality audio
         _archive_or_delete_file(audio_path, config, processed_folder)

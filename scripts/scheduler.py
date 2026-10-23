@@ -23,11 +23,15 @@ PROJECT_ROOT = getattr(sys, '_MEIPASS', os.path.dirname(HERE))
 
 
 def load_config():
-    env_path = os.path.join(PROJECT_ROOT, "config", ".env")
-    if not os.path.exists(env_path):
-        print(f"[ERROR] Missing {env_path}. Copy config/.env.example to config/.env and fill it in.")
-        sys.exit(1)
-    return dotenv_values(env_path)
+    cfg = {}
+    for cand in [os.path.join(PROJECT_ROOT, "config", ".env"), os.path.join(PROJECT_ROOT, "config", ".env.client")]:
+        if os.path.exists(cand):
+            cfg.update(dotenv_values(cand))
+            break
+    user_env = os.path.expanduser("~/.classtracker/config/.env")
+    if os.path.exists(user_env):
+        cfg.update(dotenv_values(user_env))
+    return cfg
 
 
 def get_user_data_dir() -> str:
@@ -38,14 +42,12 @@ def get_user_data_dir() -> str:
 
 def get_active_schedule_path() -> str:
     user_schedule = os.path.join(get_user_data_dir(), "config", "schedule.json")
-    if not os.path.exists(user_schedule) or os.path.getsize(user_schedule) <= 2:
-        # Seed from bundled schedule if available
-        bundle_schedule = os.path.join(PROJECT_ROOT, "config", "schedule.json")
-        if os.path.exists(bundle_schedule):
-            try:
-                shutil.copy2(bundle_schedule, user_schedule)
-            except Exception:
-                pass
+    if not os.path.exists(user_schedule):
+        try:
+            with open(user_schedule, "w", encoding="utf-8") as f:
+                json.dump([], f)
+        except Exception:
+            pass
     return user_schedule
 
 
@@ -73,9 +75,10 @@ def load_schedule(purge_expired: bool = True):
         course_filter = None
 
     for item in items:
-        # 1. Filter out non-target courses (e.g. DSA, GenAI, IT)
+        # 1. Check if event matches any configured subject/course
         item_title = item.get("title") or item.get("name") or ""
-        if not is_target_course_event(item_title, course_filter=course_filter):
+        from calendar_sync import match_course_for_event
+        if not match_course_for_event(item_title) and not is_target_course_event(item_title, course_filter=course_filter):
             changed = True
             continue
 
@@ -196,14 +199,9 @@ def prompt_start_dialog(class_name: str, start_time: str, end_time: str) -> bool
     Times out safely after 60 seconds if unattended.
     """
     clean_name = class_name.replace('"', '')
-    applescript = f'''
-    tell application "System Events"
-        activate
-        display dialog "🔔 {clean_name} is scheduled now ({start_time} - {end_time}).\\n\\nStart recording class lecture?" with title "Class Tracker 🎙️" buttons {{"Cancel / Skip", "Start Recording"}} default button "Start Recording" giving up after 60 with icon note
-    end tell
-    '''
+    applescript = f'display dialog "🔔 {clean_name} is scheduled now ({start_time} - {end_time}).\\n\\nStart recording class lecture?" with title "Class Tracker 🎙️" buttons {{"Cancel / Skip", "Start Recording"}} default button "Start Recording" giving up after 60 with icon note'
     try:
-        res = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True)
+        res = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True, timeout=65)
         if "button returned:Start Recording" in res.stdout:
             return True
         else:
@@ -217,14 +215,9 @@ def prompt_start_dialog(class_name: str, start_time: str, end_time: str) -> bool
 def prompt_retry_dialog(class_name: str, end_time: str) -> bool:
     """Displays a gentle follow-up confirmation dialog 1 minute after an initial skip if the lecture is still in session."""
     clean_name = class_name.replace('"', '')
-    applescript = f'''
-    tell application "System Events"
-        activate
-        display dialog "🔔 {clean_name} is still in session (until {end_time}).\\n\\nDid you mean to start recording?" with title "Class Tracker 🎙️" buttons {{"Dismiss for Today", "Start Recording"}} default button "Start Recording" giving up after 60 with icon note
-    end tell
-    '''
+    applescript = f'display dialog "🔔 {clean_name} is still in session (until {end_time}).\\n\\nDid you mean to start recording?" with title "Class Tracker 🎙️" buttons {{"Dismiss for Today", "Start Recording"}} default button "Start Recording" giving up after 60 with icon note'
     try:
-        res = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True)
+        res = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True, timeout=65)
         return "button returned:Start Recording" in res.stdout
     except Exception as e:
         print(f"[ERROR] Retry dialog error: {e}")
@@ -298,11 +291,19 @@ def run_scheduler(test_mode: bool = False):
         else config["GOOGLE_SERVICE_ACCOUNT_JSON"]
     )
 
-    sheet = SheetClient(
-        service_account_json=service_account_path,
-        sheet_id=config["GOOGLE_SHEET_ID"],
-        tab_name=config["SHEET_TAB_NAME"],
-    )
+    from profile_manager import get_all_courses
+    courses = get_all_courses(prefer_user_dir=True)
+    first_c = courses[0] if courses else {}
+    target_sid = first_c.get("sheet_id") or config.get("GOOGLE_SHEET_ID", "")
+    target_tab = first_c.get("tab_name") or config.get("SHEET_TAB_NAME", "Sheet1")
+
+    sheet = None
+    if target_sid:
+        sheet = SheetClient(
+            service_account_json=service_account_path,
+            sheet_id=target_sid,
+            tab_name=target_tab,
+        )
 
     print("\n" + "=" * 65)
     print("📅 CLASS TRACKER AUTOMATED SCHEDULER ACTIVE")
@@ -402,7 +403,38 @@ def run_scheduler(test_mode: bool = False):
                         f"Recording complete for '{class_name}'. Transcribing & updating Google Sheet..."
                     )
                     try:
-                        process_file(audio_filepath, config, sheet, processed_folder, auto_confirm=True)
+                        class_cfg = dict(config)
+                        if item.get("sheet_id"):
+                            class_cfg["GOOGLE_SHEET_ID"] = item["sheet_id"]
+                        if item.get("tab_name"):
+                            class_cfg["SHEET_TAB_NAME"] = item["tab_name"]
+                        if item.get("teacher_email"):
+                            class_cfg["TEACHER_EMAIL"] = item["teacher_email"]
+                        if item.get("course_code"):
+                            class_cfg["COURSE_CODE"] = item["course_code"]
+
+                        cid = (item.get("course_id") or item.get("course_code") or "").lower()
+                        if cid:
+                            cand_curr = os.path.join(HERE, "config", f"curriculum_{cid}.json")
+                            user_curr = os.path.expanduser(f"~/.classtracker/config/curriculum_{cid}.json")
+                            if os.path.exists(cand_curr):
+                                class_cfg["CURRICULUM_PATH"] = cand_curr
+                            elif os.path.exists(user_curr):
+                                class_cfg["CURRICULUM_PATH"] = user_curr
+
+                        class_sheet = sheet
+                        if item.get("sheet_id") or item.get("tab_name"):
+                            try:
+                                class_sheet = SheetClient(
+                                    service_account_json=sa_path,
+                                    sheet_id=class_cfg.get("GOOGLE_SHEET_ID"),
+                                    tab_name=class_cfg.get("SHEET_TAB_NAME", "Sheet1"),
+                                )
+                            except Exception as se:
+                                print(f"[WARN] Using default sheet connection: {se}")
+                                class_sheet = sheet
+
+                        process_file(audio_filepath, class_cfg, class_sheet, processed_folder, auto_confirm=True)
                     except Exception as e:
                         print(f"[ERROR] Pipeline execution failed: {e}")
 

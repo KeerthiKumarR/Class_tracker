@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initCopyButtons();
     initAudioSandbox();
     initEmailSettings();
-    checkServerHealth();
 });
 
 // ==============================================================================
@@ -837,23 +836,8 @@ async function loadEmailSettings() {
 }
 
 // ==============================================================================
-// 9. Utilities & Server Health Check
+// 9. Utilities & Toast Notifications
 // ==============================================================================
-async function checkServerHealth() {
-    try {
-        const res = await fetch('/healthz');
-        const data = await res.json();
-        const pill = document.getElementById('server-status');
-        if (data.alive) {
-            pill.className = 'status-pill online';
-            pill.querySelector('.status-text').textContent = 'Server Active';
-        }
-    } catch (e) {
-        const pill = document.getElementById('server-status');
-        pill.className = 'status-pill offline';
-        pill.querySelector('.status-text').textContent = 'Connecting...';
-    }
-}
 
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');

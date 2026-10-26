@@ -105,13 +105,43 @@ def get_course_by_id(course_id: str) -> Optional[Dict[str, Any]]:
 
 
 def get_course_by_pairing_code(code: str) -> Optional[Dict[str, Any]]:
-    """Finds a course profile by pairing code (case-insensitive, e.g. 'DAA-8942')."""
+    """Finds a course profile flexibly by:
+    1. Exact pairing code (e.g. 'DAA-1655', 'DAA-0183')
+    2. Course code (e.g. 'DAA') or Course ID ('daa')
+    3. Prefix of pairing code (e.g. 'DAA-4645' -> matches 'DAA')
+    4. If only 1 course exists and query looks like a course code, return it.
+    """
     courses = get_all_courses()
+    if not courses:
+        return None
     target = code.strip().upper().replace(" ", "")
+
+    # 1. Exact match on pairing_code
     for c in courses:
         clean_code = c.get("pairing_code", "").strip().upper().replace(" ", "")
-        if clean_code == target:
+        if clean_code and clean_code == target:
             return c
+
+    # 2. Match on course code or course ID (e.g. 'DAA' or 'daa')
+    for c in courses:
+        course_code = c.get("code", "").strip().upper().replace(" ", "")
+        course_id = c.get("id", "").strip().upper().replace(" ", "")
+        if target in (course_code, course_id):
+            return c
+
+    # 3. Match on prefix if code is formatted like 'CODE-XXXX'
+    prefix = target.split("-")[0].strip()
+    if prefix:
+        for c in courses:
+            course_code = c.get("code", "").strip().upper().replace(" ", "")
+            course_id = c.get("id", "").strip().upper().replace(" ", "")
+            if prefix in (course_code, course_id):
+                return c
+
+    # 4. Fallback: If only 1 course is configured on the portal, return it
+    if len(courses) == 1:
+        return courses[0]
+
     return None
 
 

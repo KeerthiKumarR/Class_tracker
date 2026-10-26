@@ -455,7 +455,16 @@ def api_course_detail(course_id: str):
 @app.route("/api/pair/<code>", methods=["GET"])
 def api_pair_client(code: str):
     """Universal macOS App pairing endpoint. Returns payload required to configure the client."""
-    course = get_course_by_pairing_code(code)
+    from profile_manager import get_all_courses
+    course = get_course_by_pairing_code(code) or get_course_by_id(code)
+    if not course:
+        prefix = code.split("-")[0].strip().lower()
+        course = get_course_by_id(prefix)
+
+    all_c = get_all_courses()
+    if not course and len(all_c) == 1:
+        course = all_c[0]
+
     if not course:
         return jsonify({
             "success": False,

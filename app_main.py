@@ -820,8 +820,10 @@ class ClassTrackerMenuBarApp(rumps.App):
             }
             save_user_paired_course(course_obj)
 
+            self.current_status = "Active & Monitoring"
+            self.item_status.title = f"Status: {self.current_status}"
             self._refresh_paired_courses_menu()
-            sync_google_calendar(days_ahead=7)
+            threading.Thread(target=sync_google_calendar, kwargs={"days_ahead": 7}, daemon=True).start()
 
             course_name = data.get("name", code)
             tab_name = data.get("tab_name", code)

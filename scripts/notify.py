@@ -87,7 +87,8 @@ def send_teacher_summary(
         hw_str = hw if hw else "None / Not assigned"
         notes = result.get("notes", "")
 
-        subject = f"📚 DAA Summary — {unit_id} {topic} — {date_str}"
+        course_label = cfg.get("COURSE_CODE") or cfg.get("SHEET_TAB_NAME") or "Lecture"
+        subject = f"📚 {course_label} Summary — {unit_id} {topic} — {date_str}"
         body = (
             f"Unit: {unit_id} · {topic}\n"
             f"Date: {date_str}\n"

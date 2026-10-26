@@ -34,11 +34,18 @@ def main():
         if not os.path.isabs(config["GOOGLE_SERVICE_ACCOUNT_JSON"]) \
         else config["GOOGLE_SERVICE_ACCOUNT_JSON"]
 
-    sheet = SheetClient(
-        service_account_json=service_account_path,
-        sheet_id=config["GOOGLE_SHEET_ID"],
-        tab_name=config["SHEET_TAB_NAME"],
-    )
+    from profile_manager import get_all_courses
+    courses = get_all_courses(prefer_user_dir=True)
+    first_c = courses[0] if courses else {}
+    target_sid = first_c.get("sheet_id") or config.get("GOOGLE_SHEET_ID", "")
+    target_tab = first_c.get("tab_name") or config.get("SHEET_TAB_NAME", "Sheet1")
+    sheet = None
+    if target_sid:
+        sheet = SheetClient(
+            service_account_json=service_account_path,
+            sheet_id=target_sid,
+            tab_name=target_tab,
+        )
 
     print(f"[INFO] Watching {watch_folder} every {POLL_SECONDS}s. Ctrl+C to stop.")
     seen = set()

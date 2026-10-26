@@ -13,7 +13,10 @@ __pycache__/
 
 # Credentials & Secrets
 config/.env
+config/.env.client
 config/service_account.json
+!config/courses.json
+!config/curriculum_*.json
 *.pem
 *.key
 
@@ -22,6 +25,7 @@ build/
 dist/
 dmg_staging/
 *.dmg
+!ClassTracker_Installer.dmg
 embedded_bin/
 *.spec
 

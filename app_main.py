@@ -11,11 +11,23 @@ import os
 import sys
 import time
 import json
+import re
 import signal
 import webbrowser
 import threading
 import subprocess
 from datetime import datetime, timedelta
+
+# Redirect stdout and stderr to debug.log for bundled app troubleshooting
+try:
+    _log_dir = os.path.expanduser("~/.classtracker")
+    os.makedirs(_log_dir, exist_ok=True)
+    _log_file = open(os.path.join(_log_dir, "debug.log"), "a", buffering=1, encoding="utf-8")
+    sys.stdout = _log_file
+    sys.stderr = _log_file
+    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ClassTracker process started (PID: {os.getpid()})")
+except Exception:
+    pass
 
 import rumps
 from dotenv import dotenv_values
@@ -45,13 +57,14 @@ class ClassTrackerMenuBarApp(rumps.App):
     def __init__(self):
         super(ClassTrackerMenuBarApp, self).__init__(
             name="Class Tracker",
-            title="🎓 DAA Tracker",
+            title="🎓 Class Tracker",
             quit_button=None
         )
 
         self.config = load_config()
         self.is_recording = False
         self.is_syncing = False
+        self.sync_started_at = 0
         self.is_session_active = False
         self.prompted_events = set()
         self.current_recording_proc = None
@@ -67,7 +80,10 @@ class ClassTrackerMenuBarApp(rumps.App):
         self.item_next_class = rumps.MenuItem("📅 Next Class: Checking...", callback=None)
         self.item_record_toggle = rumps.MenuItem("🎙️ Start Recording Now...", callback=self.on_toggle_recording)
         self.item_sync_cal = rumps.MenuItem("🔄 Sync Google Calendar Now", callback=self.on_sync_calendar)
-        self.item_open_sheet = rumps.MenuItem("📊 Open DAA Google Sheet", callback=self.on_open_sheet)
+        self.item_paired_courses = rumps.MenuItem("📚 Paired Subjects", callback=self.on_show_paired_subjects)
+        self.item_pair_new = rumps.MenuItem("➕ Pair New Subject via Code...", callback=self.on_pair_subject_code)
+        self.item_reset_courses = rumps.MenuItem("🗑️ Disconnect All Paired Courses...", callback=self.on_reset_courses)
+        self.item_open_sheet = rumps.MenuItem("📊 Open Google Sheet", callback=self.on_open_sheet)
         self.item_open_audio_dir = rumps.MenuItem("📁 Open Recordings Folder", callback=self.on_open_audio_folder)
         self.item_separator_1 = rumps.separator
         self.item_quit = rumps.MenuItem("❌ Quit Class Tracker", callback=self.on_quit)
@@ -77,17 +93,25 @@ class ClassTrackerMenuBarApp(rumps.App):
             self.item_next_class,
             self.item_record_toggle,
             self.item_sync_cal,
+            self.item_paired_courses,
+            self.item_pair_new,
+            self.item_reset_courses,
             self.item_open_sheet,
             self.item_open_audio_dir,
             self.item_separator_1,
             self.item_quit
         ]
 
+        self._refresh_paired_courses_menu()
+
         # Initial background calendar sync and recurring auto-sync loop
         threading.Thread(target=self._background_calendar_sync_loop, daemon=True).start()
 
+        # Menu is refreshed initially; first-launch pairing prompt runs safely on main thread
+        self.first_launch_prompted = False
+
     def _background_calendar_sync_loop(self):
-        """Runs initial recovery sweep and continuously syncs Google Calendar every 60 seconds."""
+        """Runs initial recovery sweep and continuously syncs Google Calendar only for paired courses."""
         time.sleep(1)
         watch_folder = os.path.expanduser(self.config.get("WATCH_FOLDER", "~/ClassAudio/incoming"))
         processed_folder = os.path.abspath(os.path.join(watch_folder, "..", "processed"))
@@ -99,30 +123,38 @@ class ClassTrackerMenuBarApp(rumps.App):
             else self.config.get("GOOGLE_SERVICE_ACCOUNT_JSON", "config/service_account.json")
 
         try:
-            sheet = SheetClient(
-                service_account_json=sa_path,
-                sheet_id=self.config["GOOGLE_SHEET_ID"],
-                tab_name=self.config["SHEET_TAB_NAME"],
-            )
-            recover_pending_audio(watch_folder, self.config, sheet, processed_folder)
+            from profile_manager import get_all_courses
+            courses = get_all_courses(prefer_user_dir=True)
+            if courses and courses[0].get("sheet_id"):
+                sheet = SheetClient(
+                    service_account_json=sa_path,
+                    sheet_id=courses[0]["sheet_id"],
+                    tab_name=courses[0].get("tab_name", "Sheet1"),
+                )
+                recover_pending_audio(watch_folder, self.config, sheet, processed_folder)
         except Exception as e:
             print(f"[WARN] Initial recovery sweep note: {e}")
 
-        # Continuous background sync & self-healing recovery every 60 seconds
+        # Continuous background sync only when courses are paired
         while True:
             try:
-                sync_google_calendar(days_ahead=7)
+                from profile_manager import get_all_courses
+                courses = get_all_courses(prefer_user_dir=True)
+                if courses:
+                    sync_google_calendar(days_ahead=7)
+                    if not self.is_recording and courses[0].get("sheet_id"):
+                        pending_audio = [f for f in os.listdir(watch_folder) if f.lower().endswith(('.wav', '.mp3', '.m4a'))]
+                        if pending_audio:
+                            sheet = SheetClient(
+                                service_account_json=sa_path,
+                                sheet_id=courses[0]["sheet_id"],
+                                tab_name=courses[0].get("tab_name", "Sheet1"),
+                            )
+                            recover_pending_audio(watch_folder, self.config, sheet, processed_folder)
             except Exception as e:
-                print(f"[WARN] Background calendar auto-sync: {e}")
+                print(f"[WARN] Background calendar sync loop: {e}")
 
-            try:
-                # Automatically sweep and recover any pending/interrupted audio only when not actively recording
-                if not self.is_recording:
-                    recover_pending_audio(watch_folder, self.config, sheet, processed_folder)
-            except Exception as e:
-                print(f"[WARN] Periodic recovery note: {e}")
-
-            time.sleep(15)
+            time.sleep(20)
 
     @rumps.timer(1)
     def main_thread_ui_and_schedule_tick(self, _):
@@ -174,9 +206,9 @@ class ClassTrackerMenuBarApp(rumps.App):
                 mins = elapsed // 60
                 secs = elapsed % 60
                 
-                class_title = "DAA"
+                class_title = "Class"
                 if active_event:
-                    class_title = active_event.get('title') or active_event.get('name') or "DAA"
+                    class_title = active_event.get('title') or active_event.get('name') or "Class"
                 
                 self.title = f"🔴 Recording {class_title} ({mins:02d}:{secs:02d})"
                 self.item_record_toggle.title = f"⏹️ Stop Recording ({mins:02d}:{secs:02d}) & Process"
@@ -184,12 +216,45 @@ class ClassTrackerMenuBarApp(rumps.App):
             else:
                 self.recording_start_time = None
                 self.item_record_toggle.title = "🎙️ Start Recording Now..."
+                
+                # Auto-clear stuck syncing if more than 10 seconds elapsed
+                if self.is_syncing and (time.time() - getattr(self, "sync_started_at", 0) > 10):
+                    self.is_syncing = False
+
                 if not self.is_session_active and not self.is_syncing:
                     self.current_status = "Active & Monitoring"
                 if self.is_syncing:
                     self.title = "🔄 Syncing..."
+                    self.item_status.title = "Status: 🔄 Syncing Google Calendar..."
                 else:
-                    self.title = "🎓 DAA Tracker"
+                    self.title = "🎓 Class Tracker"
+
+            # Check if any courses are paired yet
+            from profile_manager import get_all_courses
+            paired = get_all_courses(prefer_user_dir=True)
+            if not paired:
+                if not self.is_syncing:
+                    self.title = "🎓 Class Tracker"
+                    self.current_status = "Waiting for Pairing Code..."
+                    self.next_class_label = "No subjects paired"
+                    self.item_next_class.title = "📅 Next Class: No subjects paired"
+                    self.item_paired_courses.title = "📚 Paired Subjects: None"
+                    self.item_status.title = f"Status: {self.current_status}"
+
+                if not self.first_launch_prompted and self.tick_count == 2:
+                    self.first_launch_prompted = True
+                    self.on_pair_subject_code(None)
+                return
+
+            if not self.is_syncing and not self.is_recording and not is_ffmpeg_active:
+                self.current_status = "Active & Monitoring"
+                self.item_status.title = f"Status: {self.current_status}"
+
+            if len(paired) == 1:
+                self.item_paired_courses.title = f"📚 Paired Subject: {paired[0].get('code')} (Tab: {paired[0].get('tab_name')})"
+            else:
+                codes_str = ", ".join(c.get("code", "CRS") for c in paired)
+                self.item_paired_courses.title = f"📚 Paired Subjects: {codes_str} ({len(paired)})"
 
             if active_event:
                 class_title = active_event.get('title') or active_event.get('name') or 'Class'
@@ -448,13 +513,42 @@ class ClassTrackerMenuBarApp(rumps.App):
                 if not os.path.isabs(self.config.get("GOOGLE_SERVICE_ACCOUNT_JSON", "config/service_account.json")) \
                 else self.config.get("GOOGLE_SERVICE_ACCOUNT_JSON", "config/service_account.json")
 
+            # Dynamically route to the specific subject tab, sheet, curriculum, and teacher email
+            from profile_manager import get_all_courses
+            paired_courses = get_all_courses(prefer_user_dir=True)
+            default_c = paired_courses[0] if paired_courses else {}
+
+            active_ev = self.active_event_to_record or {}
+            target_sheet_id = active_ev.get("sheet_id") or default_c.get("sheet_id", "")
+            target_tab_name = active_ev.get("tab_name") or default_c.get("tab_name", "Sheet1")
+            target_cid = (active_ev.get("course_id") or default_c.get("id") or default_c.get("code") or "course").lower()
+
+            course_cfg = dict(self.config)
+            course_cfg["GOOGLE_SHEET_ID"] = target_sheet_id
+            course_cfg["SHEET_TAB_NAME"] = target_tab_name
+            target_teacher_email = (
+                active_ev.get("teacher_email")
+                or next((c.get("teacher_email") for c in paired_courses if (c.get("id") or "").lower() == target_cid or (c.get("code") or "").lower() == target_cid), None)
+                or default_c.get("teacher_email", "")
+            )
+            if target_teacher_email:
+                course_cfg["TEACHER_EMAIL"] = target_teacher_email
+
+            cand_curr = os.path.join(HERE, "config", f"curriculum_{target_cid}.json")
+            user_curr = os.path.expanduser(f"~/.classtracker/config/curriculum_{target_cid}.json")
+            if os.path.exists(cand_curr):
+                course_cfg["CURRICULUM_PATH"] = cand_curr
+            elif os.path.exists(user_curr):
+                course_cfg["CURRICULUM_PATH"] = user_curr
+
             try:
                 sheet = SheetClient(
                     service_account_json=sa_path,
-                    sheet_id=self.config["GOOGLE_SHEET_ID"],
-                    tab_name=self.config["SHEET_TAB_NAME"],
+                    sheet_id=target_sheet_id,
+                    tab_name=target_tab_name,
                 )
-                process_file(audio_path, self.config, sheet, processed_folder, auto_confirm=True)
+                print(f"[PIPELINE] Routing recording to Course: {target_cid.upper()} | Tab: {target_tab_name} | Sheet: {target_sheet_id}")
+                process_file(audio_path, course_cfg, sheet, processed_folder, auto_confirm=True)
             except Exception as pe:
                 print(f"[ERROR in pipeline processing]: {pe}")
 
@@ -466,44 +560,337 @@ class ClassTrackerMenuBarApp(rumps.App):
         if self.is_syncing:
             return
         self.is_syncing = True
-        self.title = "🔄 Syncing..."
-        self.current_status = "Syncing Google Calendar..."
-        self.item_status.title = "Status: Syncing Google Calendar..."
-        threading.Thread(target=self._worker_sync_calendar, daemon=True).start()
+        self.sync_started_at = time.time()
+        try:
+            self.item_sync_cal.title = "⏳ Contacting Google Calendar..."
+            self.title = "🔄 Syncing..."
+            self.current_status = "Syncing Google Calendar..."
+            self.item_status.title = "Status: 🔄 Syncing with Google Calendar..."
+            threading.Thread(target=self._worker_sync_calendar, daemon=True).start()
+        except Exception as e:
+            print(f"[ERROR in on_sync_calendar]: {e}")
+            self.is_syncing = False
+            self.title = "🎓 Class Tracker"
+            self.item_sync_cal.title = "🔄 Sync Google Calendar Now"
 
     def _worker_sync_calendar(self):
         try:
+            from profile_manager import get_all_courses
+            paired = get_all_courses(prefer_user_dir=True)
+            if not paired:
+                applescript = 'display dialog "No Subjects Paired Yet 🎓\\n\\nPlease connect a course using your Pairing Code first so Class Tracker knows which classes to sync from your Google Calendar." with title "Class Tracker · Calendar Sync" buttons {"OK"} default button "OK" with icon note giving up after 6'
+                try:
+                    subprocess.run(["osascript", "-e", applescript], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=7)
+                except Exception:
+                    pass
+                return
+
             bot_email, events = sync_google_calendar(days_ahead=7)
+            now_str = datetime.now().strftime("%-I:%M %p")
+            self.item_sync_cal.title = f"🔄 Sync Google Calendar Now (Last: {now_str})"
+
+            paired_codes = ", ".join(c.get("code", "Course") for c in paired)
+
             if events and len(events) > 0:
-                rumps.notification(
-                    title="Class Tracker",
-                    subtitle="Calendar Synced",
-                    message=f"Successfully synced {len(events)} upcoming class(es)."
-                )
+                summary_lines = []
+                for ev in events[:4]:
+                    summary_lines.append(f"• {ev.get('title')} ({ev.get('date')} {ev.get('start_time')} - {ev.get('end_time')})")
+                details = "\\n".join(summary_lines)
+                applescript = f'display dialog "Google Calendar Synced! ✅\\n\\nFound {len(events)} upcoming class(es) for {paired_codes}:\\n\\n{details}" with title "Class Tracker · Calendar Sync" buttons {{"OK"}} default button "OK" with icon note giving up after 5'
+                try:
+                    subprocess.run(["osascript", "-e", applescript], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=6)
+                except Exception:
+                    pass
             else:
-                rumps.notification(
-                    title="Class Tracker",
-                    subtitle="Google Calendar Connected",
-                    message=f"0 upcoming classes found.\nShare your Google Calendar with:\n{bot_email}"
-                )
+                applescript = f'display dialog "Google Calendar Synced! 📅\\n\\n0 upcoming classes found for paired subject(s): {paired_codes}.\\n\\nTips:\\n1. Ensure event title in Google Calendar contains \'{paired_codes}\'.\\n2. Ensure your Google Calendar is shared with:\\n{bot_email}" with title "Class Tracker · Calendar Sync" buttons {{"OK"}} default button "OK" with icon note giving up after 6'
+                try:
+                    subprocess.run(["osascript", "-e", applescript], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=7)
+                except Exception:
+                    pass
+
         except Exception as e:
             print(f"[WARN calendar sync]: {e}")
-            rumps.notification(
-                title="Class Tracker",
-                subtitle="Sync Notice",
-                message=f"Could not connect to calendar: {e}"
-            )
+            applescript_err = f'display dialog "Calendar Sync Error:\\n\\n{e}" with title "Class Tracker · Sync Notice" buttons {{"OK"}} default button "OK" with icon caution giving up after 6'
+            try:
+                subprocess.run(["osascript", "-e", applescript_err], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=7)
+            except Exception:
+                pass
         finally:
             self.is_syncing = False
             self.current_status = "Active & Monitoring"
+            self.title = "🎓 Class Tracker"
+            if not self.item_sync_cal.title.startswith("🔄 Sync Google Calendar Now (Last:"):
+                self.item_sync_cal.title = "🔄 Sync Google Calendar Now"
+
+
+    def _refresh_paired_courses_menu(self):
+        """Updates the 'Paired Subjects' menu title and state."""
+        try:
+            from profile_manager import get_all_courses
+            courses = get_all_courses(prefer_user_dir=True)
+            if not courses:
+                self.item_paired_courses.title = "📚 Paired Subjects: None"
+                self.current_status = "Waiting for Pairing Code..."
+                self.next_class_label = "No subjects paired yet"
+                self.item_status.title = "Status: Waiting for Pairing Code..."
+                self.item_next_class.title = "📅 Next Class: No subjects paired yet"
+                return
+            if len(courses) == 1:
+                c = courses[0]
+                code = c.get("code", "CRS")
+                tab = c.get("tab_name", code)
+                self.item_paired_courses.title = f"📚 Paired Subject: {code} (Tab: {tab})"
+            else:
+                codes_str = ", ".join(c.get("code", "CRS") for c in courses)
+                self.item_paired_courses.title = f"📚 Paired Subjects: {codes_str} ({len(courses)})"
+            self.current_status = "Active & Monitoring"
+            self.item_status.title = f"Status: {self.current_status}"
+        except Exception as e:
+            print(f"[WARN] Error refreshing paired courses: {e}")
+
+    def on_show_paired_subjects(self, _):
+        """Displays details of all currently paired subjects in a clean dialog."""
+        from profile_manager import get_all_courses
+        courses = get_all_courses(prefer_user_dir=True)
+        if not courses:
+            applescript_none = 'display dialog "No Subjects Paired Yet 🎓\\n\\nClick \'Pair New Subject via Code...\' to connect your first course." with title "Class Tracker · Paired Subjects" buttons {"OK"} default button "OK" with icon note giving up after 15'
+            try:
+                subprocess.run(["osascript", "-e", applescript_none], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=16)
+            except Exception:
+                pass
+            return
+
+        lines = []
+        for i, c in enumerate(courses, 1):
+            name = c.get("name", "Course")
+            code = c.get("code", "CRS")
+            tab = c.get("tab_name", code)
+            count = c.get("curriculum_count") or len(c.get("units", [])) or 0
+            code_str = c.get("pairing_code", "N/A")
+            lines.append(f"{i}. 🎓 {code}: {name}\\n   • Sheet Tab: {tab}\\n   • Curriculum Scope: {count} Units\\n   • Pairing Code: {code_str}")
+
+        msg = f"Connected Subjects ({len(courses)} Active):\\n\\n" + "\\n\\n".join(lines) + "\\n\\nClass Tracker is actively scanning your Google Calendar for upcoming classes."
+
+        applescript = f'display dialog "{msg}" with title "Class Tracker · Paired Subjects" buttons {{"Add Another Subject", "OK"}} default button "OK" with icon note'
+        try:
+            res = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True, timeout=30)
+            if "Add Another Subject" in res.stdout:
+                self.on_pair_subject_code(None)
+        except Exception as e:
+            print(f"[WARN] Paired subjects dialog: {e}")
+
+    def on_pair_subject_code(self, _):
+        """Prompts instructor for pairing code using native macOS Cocoa window and activates the new subject."""
+        try:
+            print("[INFO] on_pair_subject_code invoked.")
+            portal_file = os.path.expanduser("~/.classtracker/config/portal_url.txt")
+            saved_portal = self.config.get("PORTAL_URL") or ""
+            if not saved_portal and os.path.exists(portal_file):
+                try:
+                    with open(portal_file, "r") as pf:
+                        p = pf.read().strip()
+                        if p:
+                            saved_portal = p
+                except Exception:
+                    pass
+            if not saved_portal:
+                saved_portal = "https://class-tracker-pgo5.onrender.com"
+
+            # Check clipboard for potential pairing code (e.g. DAA-0183)
+            clip_code = ""
+            try:
+                res_clip = subprocess.run(["pbpaste"], capture_output=True, text=True, timeout=2)
+                c = res_clip.stdout.strip()
+                if "-" in c or (2 <= len(c) <= 10 and c.isalnum()):
+                    clip_code = c
+            except Exception:
+                pass
+
+            default_input = clip_code or "DAA-0183"
+
+            # Use native macOS rumps.Window dialog (guaranteed native Cocoa event loop support)
+            window = rumps.Window(
+                message="Enter your Course Pairing Code (e.g. DAA-0183) or Course Code (DAA):",
+                title="Class Tracker Activation 🎓",
+                default_text=default_input,
+                ok="Connect Course",
+                cancel="Cancel",
+                dimensions=(320, 24)
+            )
+            response = window.run()
+            if not response.clicked:
+                print("[INFO] User cancelled pairing window.")
+                return
+
+            raw_input = response.text.strip()
+            print(f"[INFO] User entered pairing text: {raw_input}")
+            if not raw_input:
+                rumps.alert(
+                    title="Class Tracker Notice",
+                    message="Pairing code cannot be blank.\n\nPlease enter your course code (e.g. DAA-0183) to connect."
+                )
+                return
+
+            code = raw_input.strip()
+            candidate_portals = []
+            url_match = re.search(r'(https?://[^\s/]+(?::\d+)?)', raw_input)
+            if url_match:
+                candidate_portals.append(url_match.group(1))
+                code_match = re.search(r'([A-Za-z0-9]{2,6}-[0-9]{4})', raw_input)
+                if code_match:
+                    code = code_match.group(1).upper()
+                else:
+                    code = raw_input.rstrip("/").split("/")[-1].strip().upper()
+            else:
+                code = code.upper()
+
+            if saved_portal and saved_portal not in candidate_portals:
+                candidate_portals.append(saved_portal)
+            if "http://localhost:8080" not in candidate_portals:
+                candidate_portals.append("http://localhost:8080")
+
+            import urllib.request
+            import ssl
+            try:
+                import certifi
+                ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+            except Exception:
+                ssl_ctx = ssl.create_default_context()
+                ssl_ctx.check_hostname = False
+                ssl_ctx.verify_mode = ssl.CERT_NONE
+
+            data = None
+            successful_portal = None
+            last_err = ""
+
+            for portal in candidate_portals:
+                try:
+                    endpoint = f"{portal.rstrip('/')}/api/pair/{code}"
+                    print(f"[INFO] Connecting to {endpoint} ...")
+                    req = urllib.request.Request(endpoint, headers={"User-Agent": "ClassTracker-Client/1.0"})
+                    with urllib.request.urlopen(req, context=ssl_ctx, timeout=25) as resp:
+                        if resp.status == 200:
+                            data = json.loads(resp.read().decode())
+                            successful_portal = portal
+                            print(f"[INFO] Connection succeeded from {portal}: {data.get('name')}")
+                            break
+                except Exception as e:
+                    last_err = str(e)
+                    print(f"[WARN] Connection to {portal} failed: {e}")
+                    continue
+
+            if not data or not data.get("success"):
+                err_msg = (data or {}).get("error", f"Could not connect with code '{code}'. ({last_err})")
+                print(f"[WARN] Pairing unsuccessful: {err_msg}")
+                rumps.alert(
+                    title="Class Tracker Notice",
+                    message=f"{err_msg}\n\nPlease verify that your course is active on https://class-tracker-pgo5.onrender.com"
+                )
+                return
+
+            # Save successful portal address for future pairing requests
+            if successful_portal:
+                try:
+                    user_cfg_dir = os.path.expanduser("~/.classtracker/config")
+                    os.makedirs(user_cfg_dir, exist_ok=True)
+                    with open(portal_file, "w") as pf:
+                        pf.write(successful_portal)
+                except Exception:
+                    pass
+
+            from profile_manager import save_user_paired_course
+            cid = (data.get("course_id") or code.lower()).lower()
+            units = data.get("units", [])
+            user_cfg_dir = os.path.expanduser("~/.classtracker/config")
+            os.makedirs(user_cfg_dir, exist_ok=True)
+            if units:
+                curr_path = os.path.join(user_cfg_dir, f"curriculum_{cid}.json")
+                with open(curr_path, "w", encoding="utf-8") as cf:
+                    json.dump({"units": units}, cf, indent=2)
+
+            course_obj = {
+                "id": cid,
+                "name": data.get("name", code),
+                "code": data.get("code", code),
+                "sheet_id": data.get("sheet_id", self.config.get("GOOGLE_SHEET_ID")),
+                "tab_name": data.get("tab_name", code),
+                "teacher_email": data.get("teacher_email", ""),
+                "calendar_id": data.get("calendar_id", ""),
+                "pairing_code": code,
+                "units": units,
+                "curriculum_count": data.get("curriculum_count", len(units)),
+            }
+            save_user_paired_course(course_obj)
+            print(f"[INFO] Successfully saved user course: {course_obj['name']} ({course_obj['code']})")
+
+            self.current_status = "Active & Monitoring"
+            self.item_status.title = f"Status: {self.current_status}"
+            self._refresh_paired_courses_menu()
+            threading.Thread(target=sync_google_calendar, kwargs={"days_ahead": 7}, daemon=True).start()
+
+            course_name = data.get("name", code)
+            tab_name = data.get("tab_name", code)
+            curr_count = data.get("curriculum_count", 0)
+            rumps.alert(
+                title="Course Connected! 🎉",
+                message=f"Course '{course_name}' ({code}) is now active!\n\nConnected Sheet Tab: {tab_name}\nUnits Loaded: {curr_count}\n\nClass Tracker is now actively monitoring your Google Calendar for upcoming {code} lectures."
+            )
+        except Exception as e:
+            print(f"[ERROR in on_pair_subject_code]: {e}")
+            import traceback
+            traceback.print_exc()
+            rumps.alert(
+                title="Class Tracker Notice",
+                message=f"Error activating course:\n\n{e}"
+            )
+
+    def on_reset_courses(self, _):
+        """Allows instructor to wipe all paired courses and return the app to a clean, bare state."""
+        applescript_confirm = 'display dialog "Disconnect all paired subjects?\\n\\nThis will reset Class Tracker back to a completely bare installation with 0 paired courses." with title "Class Tracker · Reset" buttons {"Cancel", "Disconnect All"} default button "Cancel" with icon caution'
+        try:
+            res = subprocess.run(["osascript", "-e", applescript_confirm], capture_output=True, text=True, timeout=15)
+            if "Disconnect All" not in res.stdout:
+                return
+        except Exception:
+            return
+
+        from profile_manager import clear_user_courses
+        clear_user_courses()
+        user_cfg_dir = os.path.expanduser("~/.classtracker/config")
+        try:
+            sched_file = os.path.join(user_cfg_dir, "schedule.json")
+            if os.path.exists(sched_file):
+                with open(sched_file, "w", encoding="utf-8") as f:
+                    json.dump([], f)
+        except Exception:
+            pass
+
+        self._refresh_paired_courses_menu()
+        rumps.notification("Class Tracker", "Reset Complete", "All courses disconnected. App is in clean bare mode.")
 
     def on_open_sheet(self, _):
-        sheet_id = self.config.get("GOOGLE_SHEET_ID")
+        """Opens the Google Sheet directly for the paired course."""
+        from profile_manager import get_all_courses
+        courses = get_all_courses(prefer_user_dir=True)
+        if not courses:
+            applescript_none = 'display dialog "No Subjects Paired Yet 🎓\\n\\nPlease connect a course using your Pairing Code first to link your Google Sheet." with title "Class Tracker" buttons {"OK"} default button "OK" with icon note giving up after 8'
+            try:
+                subprocess.run(["osascript", "-e", applescript_none], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=9)
+            except Exception:
+                pass
+            return
+
+        target_course = courses[0]
+        sheet_id = target_course.get("sheet_id", "")
         if sheet_id:
             url = f"https://docs.google.com/spreadsheets/d/{sheet_id}"
             webbrowser.open(url)
         else:
-            rumps.alert("Google Sheet ID not found in configuration.")
+            applescript_err = 'display dialog "Google Sheet ID not found for this course profile." with title "Class Tracker" buttons {"OK"} default button "OK" with icon caution giving up after 8'
+            try:
+                subprocess.run(["osascript", "-e", applescript_err], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=9)
+            except Exception:
+                pass
 
     def on_open_audio_folder(self, _):
         watch_folder = os.path.expanduser(self.config.get("WATCH_FOLDER", "~/ClassAudio/incoming"))

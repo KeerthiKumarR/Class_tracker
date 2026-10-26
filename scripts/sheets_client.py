@@ -17,7 +17,7 @@ class SheetClient:
         self,
         service_account_json: Optional[str] = None,
         sheet_id: str = "",
-        tab_name: str = "DAA",
+        tab_name: str = "Sheet1",
     ):
         json_content_env = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT")
         creds = None

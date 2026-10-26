@@ -87,36 +87,71 @@ def get_app_config() -> Dict[str, Any]:
     return cfg
 
 
+def resolve_service_account_credentials(scopes: Optional[List[str]] = None) -> Tuple[Optional[Credentials], Optional[str]]:
+    """Resolves service account credentials from raw JSON env var, JSON file, or default paths."""
+    scopes = scopes or ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/calendar.readonly"]
+    config = get_app_config()
+    sa_val = (config.get("GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT") or config.get("GOOGLE_SERVICE_ACCOUNT_JSON") or "").strip()
+
+    # 1. If environment variable contains raw JSON string:
+    if sa_val.startswith("{") and sa_val.endswith("}"):
+        try:
+            info = json.loads(sa_val)
+            creds = Credentials.from_service_account_info(info, scopes=scopes)
+            # Write to disk so any other process/script expecting a path can read it
+            target_file = os.path.join(HERE, "config", "service_account.json")
+            os.makedirs(os.path.dirname(target_file), exist_ok=True)
+            with open(target_file, "w", encoding="utf-8") as f:
+                f.write(sa_val)
+            return creds, target_file
+        except Exception as e:
+            print(f"[WARN] Failed to parse JSON from environment variable: {e}")
+
+    # 2. Candidate file paths:
+    candidates = [
+        sa_val if (sa_val and os.path.isabs(sa_val)) else (os.path.join(HERE, sa_val) if sa_val else None),
+        os.path.join(HERE, "config", "service_account.json"),
+        os.path.expanduser("~/.classtracker/config/service_account.json"),
+        "/etc/secrets/service_account.json",  # Standard Render Secret File path
+    ]
+    for p in candidates:
+        if p and os.path.exists(p) and os.path.isfile(p):
+            try:
+                creds = Credentials.from_service_account_file(p, scopes=scopes)
+                return creds, p
+            except Exception as e:
+                print(f"[WARN] Error reading service account file at {p}: {e}")
+
+    return None, None
+
+
 def get_service_account_email(config: Optional[Dict[str, Any]] = None) -> str:
     """Extracts client email dynamically from service account credentials or config."""
     cfg = config or get_app_config()
     bot = cfg.get("BOT_EMAIL")
     if bot:
         return bot
-    sa_path = cfg.get("GOOGLE_SERVICE_ACCOUNT_JSON", "config/service_account.json")
-    if not os.path.isabs(sa_path):
-        sa_path = os.path.join(HERE, sa_path)
-    if os.path.exists(sa_path):
+    creds, sa_path = resolve_service_account_credentials()
+    if creds and hasattr(creds, "service_account_email"):
+        return creds.service_account_email
+    if sa_path and os.path.exists(sa_path):
         try:
             with open(sa_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 return data.get("client_email", "")
         except Exception:
             pass
-    return ""
+    return "class-tracker-bot@class-tracker-507704.iam.gserviceaccount.com"
 
 
 def get_sheet_client(config: Dict[str, Any], sheet_id: Optional[str] = None, tab_name: Optional[str] = None) -> SheetClient:
     """Instantiates SheetClient with service account and targeted sheet/tab."""
-    sa_path = config.get("GOOGLE_SERVICE_ACCOUNT_JSON", "config/service_account.json")
-    if not os.path.isabs(sa_path):
-        sa_path = os.path.join(HERE, sa_path)
-
+    creds, sa_path = resolve_service_account_credentials()
     sid = sheet_id or config.get("GOOGLE_SHEET_ID", "")
     tab = tab_name or config.get("SHEET_TAB_NAME", "Sheet1")
 
     return SheetClient(
-        service_account_json=sa_path,
+        service_account_json=sa_path or config.get("GOOGLE_SERVICE_ACCOUNT_JSON", "config/service_account.json"),
         sheet_id=sid,
         tab_name=tab,
     )
@@ -185,17 +220,12 @@ def verify_sheet():
     match = re.search(r"/spreadsheets/d/([a-zA-Z0-9-_]+)", sheet_input)
     sheet_id = match.group(1) if match else sheet_input.strip()
 
-    config = get_app_config()
-    sa_path = config.get("GOOGLE_SERVICE_ACCOUNT_JSON", "config/service_account.json")
-    if not os.path.isabs(sa_path):
-        sa_path = os.path.join(HERE, sa_path)
-
-    if not os.path.exists(sa_path):
-        return jsonify({"error": f"Service account credentials not found at {sa_path}"}), 500
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds, sa_path = resolve_service_account_credentials(scopes=scopes)
+    if not creds:
+        return jsonify({"error": "Service account credentials not configured. Please paste your service account JSON into the GOOGLE_SERVICE_ACCOUNT_JSON environment variable."}), 500
 
     try:
-        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-        creds = Credentials.from_service_account_file(sa_path, scopes=scopes)
         gc = gspread.authorize(creds)
         sh = gc.open_by_key(sheet_id)
 
@@ -433,9 +463,6 @@ def api_pair_client(code: str):
         }), 404
 
     config = get_app_config()
-    sa_path = config.get("GOOGLE_SERVICE_ACCOUNT_JSON", "config/service_account.json")
-    if not os.path.isabs(sa_path):
-        sa_path = os.path.join(HERE, sa_path)
 
     # Payload contains curriculum units, sheet coordinates, and calendar info
     return jsonify({

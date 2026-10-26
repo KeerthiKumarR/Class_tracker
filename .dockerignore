@@ -1,0 +1,9 @@
+.git
+.gitignore
+.DS_Store
+__pycache__
+venv/
+build/
+dist/
+dmg_staging/
+*.log

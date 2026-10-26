@@ -767,6 +767,7 @@ class ClassTrackerMenuBarApp(rumps.App):
                 applescript_err = f'display dialog "Could not connect to Web Portal with code \'{code}\':\\n\\n{pe}" with title "Class Tracker Notice" buttons {{"OK"}} default button "OK" with icon caution giving up after 10'
                 try:
                     subprocess.run(["osascript", "-e", applescript_err], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=11)
+                except Exception:
                     pass
                 return
 

@@ -15,8 +15,8 @@ __pycache__/
 config/.env
 config/.env.client
 config/service_account.json
-config/courses.json
-config/curriculum_*.json
+!config/courses.json
+!config/curriculum_*.json
 *.pem
 *.key
 

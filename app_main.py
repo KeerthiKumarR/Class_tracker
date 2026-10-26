@@ -95,8 +95,8 @@ class ClassTrackerMenuBarApp(rumps.App):
         # Initial background calendar sync and recurring auto-sync loop
         threading.Thread(target=self._background_calendar_sync_loop, daemon=True).start()
 
-        # Prompt for pairing code if zero courses are paired
-        threading.Thread(target=self._check_first_launch_pairing, daemon=True).start()
+        # Menu is refreshed initially; first-launch pairing prompt runs safely on main thread
+        self.first_launch_prompted = False
 
     def _background_calendar_sync_loop(self):
         """Runs initial recovery sweep and continuously syncs Google Calendar only for paired courses."""
@@ -228,6 +228,10 @@ class ClassTrackerMenuBarApp(rumps.App):
                     self.item_next_class.title = "📅 Next Class: No subjects paired"
                     self.item_paired_courses.title = "📚 Paired Subjects: None"
                     self.item_status.title = f"Status: {self.current_status}"
+
+                if not self.first_launch_prompted and self.tick_count == 2:
+                    self.first_launch_prompted = True
+                    self.on_pair_subject_code(None)
                 return
 
             if not self.is_syncing and not self.is_recording and not is_ffmpeg_active:
@@ -606,16 +610,6 @@ class ClassTrackerMenuBarApp(rumps.App):
             if not self.item_sync_cal.title.startswith("🔄 Sync Google Calendar Now (Last:"):
                 self.item_sync_cal.title = "🔄 Sync Google Calendar Now"
 
-    def _check_first_launch_pairing(self):
-        """On first startup or if zero courses are paired, automatically prompt for pairing code."""
-        time.sleep(1.2)
-        try:
-            from profile_manager import get_all_courses
-            courses = get_all_courses(prefer_user_dir=True)
-            if not courses:
-                self.on_pair_subject_code(None)
-        except Exception as e:
-            print(f"[INFO] First launch check note: {e}")
 
     def _refresh_paired_courses_menu(self):
         """Updates the 'Paired Subjects' menu title and state."""
@@ -674,7 +668,7 @@ class ClassTrackerMenuBarApp(rumps.App):
             print(f"[WARN] Paired subjects dialog: {e}")
 
     def on_pair_subject_code(self, _):
-        """Prompts instructor for 6-digit pairing code and activates the new subject."""
+        """Prompts instructor for pairing code using native macOS Cocoa window and activates the new subject."""
         portal_file = os.path.expanduser("~/.classtracker/config/portal_url.txt")
         saved_portal = self.config.get("PORTAL_URL") or ""
         if not saved_portal and os.path.exists(portal_file):
@@ -688,42 +682,41 @@ class ClassTrackerMenuBarApp(rumps.App):
         if not saved_portal:
             saved_portal = "https://class-tracker-pgo5.onrender.com"
 
-        applescript = (
-            'set clipText to ""\n'
-            'try\n'
-            '    set clipText to (the clipboard as text)\n'
-            'end try\n'
-            'set defaultVal to ""\n'
-            'if (clipText contains "-") or (length of clipText <= 10 and length of clipText >= 2) then\n'
-            '    set defaultVal to clipText\n'
-            'end if\n'
-            'set dialogResult to display dialog "Welcome to Class Tracker! 🎓\\n\\n'
-            'Enter your 6-digit Course Pairing Code (e.g. DAA-0183) or Course Code (DAA):" '
-            'with title "Class Tracker Activation" default answer defaultVal '
-            'buttons {"Later", "Connect Course"} default button "Connect Course" with icon note\n'
-            'return (text returned of dialogResult)'
-        )
+        # Check clipboard for potential pairing code (e.g. DAA-0183)
+        clip_code = ""
         try:
-            res = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True, timeout=300)
-            if res.returncode != 0:
-                return  # User clicked Later or cancelled
-            raw_input = res.stdout.strip()
-        except Exception as e:
-            print(f"[WARN] Dialog error: {e}")
-            return
+            res_clip = subprocess.run(["pbpaste"], capture_output=True, text=True, timeout=2)
+            c = res_clip.stdout.strip()
+            if "-" in c or (2 <= len(c) <= 10 and c.isalnum()):
+                clip_code = c
+        except Exception:
+            pass
 
+        default_input = clip_code or "DAA-0183"
+
+        # Use native macOS rumps.Window dialog (guaranteed native Cocoa event loop support)
+        window = rumps.Window(
+            message="Enter your Course Pairing Code (e.g. DAA-0183) or Course Code (DAA):",
+            title="Class Tracker Activation 🎓",
+            default_text=default_input,
+            ok="Connect Course",
+            cancel="Cancel",
+            dimensions=(320, 24)
+        )
+        response = window.run()
+        if not response.clicked:
+            return  # User clicked Cancel
+
+        raw_input = response.text.strip()
         if not raw_input:
-            applescript_empty = 'display dialog "Pairing code cannot be blank.\\n\\nPlease enter your course pairing code (e.g. DAA-0183) to connect." with title "Class Tracker Notice" buttons {"OK"} default button "OK" with icon caution'
-            try:
-                subprocess.run(["osascript", "-e", applescript_empty], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
-            except Exception:
-                pass
+            rumps.alert(
+                title="Class Tracker Notice",
+                message="Pairing code cannot be blank.\n\nPlease enter your course code (e.g. DAA-0183) to connect."
+            )
             return
 
-        # Check if user entered a full URL (e.g. https://portal.domain.com/pair/DAA-0183 or https://portal.domain.com)
         code = raw_input.strip()
         candidate_portals = []
-
         url_match = re.search(r'(https?://[^\s/]+(?::\d+)?)', raw_input)
         if url_match:
             candidate_portals.append(url_match.group(1))
@@ -757,46 +750,12 @@ class ClassTrackerMenuBarApp(rumps.App):
                 print(f"[WARN] Connection to {portal} failed: {e}")
                 continue
 
-        # If connection failed across candidate portals, prompt user to enter their hosted Portal URL
         if not data or not data.get("success"):
-            prompt_default = candidate_portals[0] if candidate_portals else "https://"
-            applescript_url = (
-                f'set dialogResult to display dialog "Could not connect with code \'{code}\'.\\n\\n'
-                'Please enter your hosted Web Portal URL (e.g. https://tracker.school.edu):" '
-                f'with title "Connect to Web Portal" default answer "{prompt_default}" '
-                'buttons {"Cancel", "Connect"} default button "Connect" with icon caution\n'
-                'return (text returned of dialogResult)'
+            err_msg = (data or {}).get("error", f"Could not connect with code '{code}'. Check web portal.")
+            rumps.alert(
+                title="Class Tracker Notice",
+                message=f"{err_msg}\n\nPlease verify that your course is active on https://class-tracker-pgo5.onrender.com"
             )
-            try:
-                res_u = subprocess.run(["osascript", "-e", applescript_url], capture_output=True, text=True, timeout=60)
-                if res_u.returncode != 0:
-                    return
-                custom_portal = res_u.stdout.strip()
-                if custom_portal:
-                    if not custom_portal.startswith("http://") and not custom_portal.startswith("https://"):
-                        custom_portal = "https://" + custom_portal
-                    endpoint = f"{custom_portal.rstrip('/')}/api/pair/{code}"
-                    req = urllib.request.Request(endpoint, headers={"User-Agent": "ClassTracker-Client/1.0"})
-                    with urllib.request.urlopen(req, timeout=8) as resp:
-                        if resp.status == 200:
-                            data = json.loads(resp.read().decode())
-                            successful_portal = custom_portal
-            except Exception as pe:
-                applescript_err = f'display dialog "Could not connect to Web Portal with code \'{code}\':\\n\\n{pe}" with title "Class Tracker Notice" buttons {{"OK"}} default button "OK" with icon caution giving up after 10'
-                try:
-                    subprocess.run(["osascript", "-e", applescript_err], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=11)
-                except Exception:
-                    pass
-                return
-
-
-        if not data or not data.get("success"):
-            err_msg = (data or {}).get("error", f"Invalid code '{code}' or portal unreachable.")
-            applescript_err = f'display dialog "{err_msg}" with title "Class Tracker Notice" buttons {{"OK"}} default button "OK" with icon caution giving up after 10'
-            try:
-                subprocess.run(["osascript", "-e", applescript_err], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=11)
-            except Exception:
-                pass
             return
 
         # Save successful portal address for future pairing requests
@@ -842,17 +801,15 @@ class ClassTrackerMenuBarApp(rumps.App):
             course_name = data.get("name", code)
             tab_name = data.get("tab_name", code)
             curr_count = data.get("curriculum_count", 0)
-            applescript_success = f'display dialog "Course \'{course_name}\' ({code}) is now active! 🎉\\n\\nConnected Sheet Tab: {tab_name}\\nUnits Loaded: {curr_count}\\n\\nThe app is now actively monitoring your Google Calendar for upcoming {code} lectures." with title "Course Connected! 🎉" buttons {{"OK"}} default button "OK" with icon note giving up after 10'
-            try:
-                subprocess.run(["osascript", "-e", applescript_success], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=11)
-            except Exception:
-                pass
+            rumps.alert(
+                title="Course Connected! 🎉",
+                message=f"Course '{course_name}' ({code}) is now active!\n\nConnected Sheet Tab: {tab_name}\nUnits Loaded: {curr_count}\n\nClass Tracker is now actively monitoring your Google Calendar for upcoming {code} lectures."
+            )
         except Exception as e:
-            applescript_err = f'display dialog "Error activating course: {e}" with title "Class Tracker Notice" buttons {{"OK"}} default button "OK" with icon caution giving up after 10'
-            try:
-                subprocess.run(["osascript", "-e", applescript_err], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=11)
-            except Exception:
-                pass
+            rumps.alert(
+                title="Class Tracker Notice",
+                message=f"Error activating course: {e}"
+            )
 
     def on_reset_courses(self, _):
         """Allows instructor to wipe all paired courses and return the app to a clean, bare state."""

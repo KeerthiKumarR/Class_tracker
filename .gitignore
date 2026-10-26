@@ -25,6 +25,7 @@ build/
 dist/
 dmg_staging/
 *.dmg
+!ClassTracker_Installer.dmg
 embedded_bin/
 *.spec
 

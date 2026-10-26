@@ -1,0 +1,22 @@
+name: Smart Keep-Alive (College Hours Only)
+
+# Runs every 10 minutes from 03:00 to 13:00 UTC (8:30 AM to 6:30 PM IST), Monday through Friday.
+# Consumes ~220 hours/month out of 750 free hours, keeping Render alive when faculty need it
+# while preserving over 500+ free hours every month so credits never run out.
+on:
+  schedule:
+    - cron: '*/10 3-13 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Class Tracker Healthcheck
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://class-tracker-pgo5.onrender.com/healthz)
+          echo "Class Tracker Portal response: HTTP $response"
+          if [ "$response" != "200" ]; then
+            echo "Unexpected status code: $response"
+            exit 1
+          fi

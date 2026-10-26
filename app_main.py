@@ -682,7 +682,7 @@ class ClassTrackerMenuBarApp(rumps.App):
             except Exception:
                 pass
         if not saved_portal:
-            saved_portal = "http://localhost:8080"
+            saved_portal = "https://class-tracker-pgo5.onrender.com"
 
         applescript = (
             'set dialogResult to display dialog "Welcome to Class Tracker! 🎓\\n\\n'

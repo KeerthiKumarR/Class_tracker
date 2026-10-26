@@ -713,6 +713,11 @@ class ClassTrackerMenuBarApp(rumps.App):
             return
 
         if not raw_input:
+            applescript_empty = 'display dialog "Pairing code cannot be blank.\\n\\nPlease enter your course pairing code (e.g. DAA-0183) to connect." with title "Class Tracker Notice" buttons {"OK"} default button "OK" with icon caution'
+            try:
+                subprocess.run(["osascript", "-e", applescript_empty], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
+            except Exception:
+                pass
             return
 
         # Check if user entered a full URL (e.g. https://portal.domain.com/pair/DAA-0183 or https://portal.domain.com)
@@ -743,12 +748,13 @@ class ClassTrackerMenuBarApp(rumps.App):
             try:
                 endpoint = f"{portal.rstrip('/')}/api/pair/{code}"
                 req = urllib.request.Request(endpoint, headers={"User-Agent": "ClassTracker-Client/1.0"})
-                with urllib.request.urlopen(req, timeout=5) as resp:
+                with urllib.request.urlopen(req, timeout=25) as resp:
                     if resp.status == 200:
                         data = json.loads(resp.read().decode())
                         successful_portal = portal
                         break
-            except Exception:
+            except Exception as e:
+                print(f"[WARN] Connection to {portal} failed: {e}")
                 continue
 
         # If connection failed across candidate portals, prompt user to enter their hosted Portal URL

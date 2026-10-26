@@ -689,14 +689,22 @@ class ClassTrackerMenuBarApp(rumps.App):
             saved_portal = "https://class-tracker-pgo5.onrender.com"
 
         applescript = (
+            'set clipText to ""\n'
+            'try\n'
+            '    set clipText to (the clipboard as text)\n'
+            'end try\n'
+            'set defaultVal to ""\n'
+            'if (clipText contains "-") or (length of clipText <= 10 and length of clipText >= 2) then\n'
+            '    set defaultVal to clipText\n'
+            'end if\n'
             'set dialogResult to display dialog "Welcome to Class Tracker! 🎓\\n\\n'
-            'Enter your 6-digit Course Pairing Code (e.g. DAA-0183) or paste your Web Portal activation link:" '
-            'with title "Class Tracker Activation" default answer "" '
+            'Enter your 6-digit Course Pairing Code (e.g. DAA-0183) or Course Code (DAA):" '
+            'with title "Class Tracker Activation" default answer defaultVal '
             'buttons {"Later", "Connect Course"} default button "Connect Course" with icon note\n'
             'return (text returned of dialogResult)'
         )
         try:
-            res = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True, timeout=60)
+            res = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True, timeout=300)
             if res.returncode != 0:
                 return  # User clicked Later or cancelled
             raw_input = res.stdout.strip()

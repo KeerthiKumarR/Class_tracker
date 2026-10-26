@@ -3,100 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Tracker · Universal Onboarding & Course Portal</title>
-    <!-- Modern Typography: Plus Jakarta Sans & Outfit -->
+    <title>Class Tracker · Course Management & Lecture Progression</title>
+    <meta name="description" content="Autonomous lecture recording, syllabus progression tracking, and timetable synchronization for academic faculty.">
+    <!-- Modern Typography: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <!-- Background Animated Gradient Mesh -->
-    <div class="bg-mesh">
-        <div class="mesh-blob blob-1"></div>
-        <div class="mesh-blob blob-2"></div>
-        <div class="mesh-blob blob-3"></div>
-    </div>
-
     <!-- Top Navigation Header -->
     <header class="top-header">
         <div class="header-container">
             <div class="brand">
-                <div class="brand-icon">🎓</div>
+                <div class="brand-mark">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
                 <div class="brand-text">
                     <span class="brand-title">Class Tracker</span>
-                    <span class="brand-subtitle">Universal Course Portal & AI Progression</span>
+                    <span class="brand-subtitle">Course Ingestion & Progression</span>
                 </div>
             </div>
 
             <!-- Main Navigation Tabs -->
-            <nav class="nav-tabs">
+            <nav class="nav-tabs" aria-label="Main Navigation">
                 <button class="nav-tab active" data-tab="onboarding" id="tab-btn-onboarding">
-                    <span class="tab-icon">⚡</span>
-                    <span class="tab-label">New Course Setup</span>
+                    <svg class="tab-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span class="tab-label">Course Onboarding</span>
                 </button>
                 <button class="nav-tab" data-tab="dashboard" id="tab-btn-dashboard">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-label">Courses & Progression</span>
+                    <svg class="tab-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span class="tab-label">Courses & Progress</span>
                 </button>
                 <button class="nav-tab" data-tab="app" id="tab-btn-app">
-                    <span class="tab-icon">📱</span>
-                    <span class="tab-label">Universal Mac App</span>
+                    <svg class="tab-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    <span class="tab-label">macOS Client</span>
                 </button>
                 <button class="nav-tab" data-tab="email-settings" id="tab-btn-email">
-                    <span class="tab-icon">✉️</span>
-                    <span class="tab-label">Email Notifications</span>
+                    <svg class="tab-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <span class="tab-label">Notifications</span>
                 </button>
             </nav>
 
-            <!-- Health Status Pill -->
+            <!-- Server Status Indicator -->
             <div class="header-actions">
                 <div class="status-pill online" id="server-status">
                     <span class="status-dot"></span>
-                    <span class="status-text">Server Active</span>
+                    <span class="status-text">Connected</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Area -->
+    <!-- Main Content Layout -->
     <main class="main-container">
 
         <!-- =================================================================== -->
-        <!-- TAB 1: NEW COURSE SETUP (WIZARD) -->
+        <!-- TAB 1: COURSE ONBOARDING (WIZARD) -->
         <!-- =================================================================== -->
         <section class="tab-panel active" id="panel-onboarding">
             <!-- Stepper Progress Header -->
             <div class="wizard-stepper">
                 <div class="step-node active" id="step-node-1">
-                    <div class="step-num">1</div>
+                    <div class="step-num">01</div>
                     <div class="step-info">
-                        <span class="step-title">Course & Sheet</span>
+                        <span class="step-title">Course & Spreadsheet</span>
                         <span class="step-desc">Connect Google Sheet</span>
                     </div>
                 </div>
                 <div class="step-divider" id="step-div-1"></div>
                 <div class="step-node" id="step-node-2">
-                    <div class="step-num">2</div>
+                    <div class="step-num">02</div>
                     <div class="step-info">
                         <span class="step-title">Syllabus Ingestion</span>
-                        <span class="step-desc">AI Curriculum Parser</span>
+                        <span class="step-desc">Curriculum Structure</span>
                     </div>
                 </div>
                 <div class="step-divider" id="step-div-2"></div>
                 <div class="step-node" id="step-node-3">
-                    <div class="step-num">3</div>
+                    <div class="step-num">03</div>
                     <div class="step-info">
                         <span class="step-title">Review & Pacing</span>
-                        <span class="step-desc">Instructor Settings</span>
+                        <span class="step-desc">Delivery Parameters</span>
                     </div>
                 </div>
                 <div class="step-divider" id="step-div-3"></div>
                 <div class="step-node" id="step-node-4">
-                    <div class="step-num">4</div>
+                    <div class="step-num">04</div>
                     <div class="step-info">
-                        <span class="step-title">Pairing & Activation</span>
-                        <span class="step-desc">6-Digit Code</span>
+                        <span class="step-title">Activation</span>
+                        <span class="step-desc">Pairing Token</span>
                     </div>
                 </div>
             </div>
@@ -104,66 +117,65 @@
             <!-- STEP 1: Course & Google Sheet -->
             <div class="wizard-step-card active" id="step-content-1">
                 <div class="card-header">
-                    <div class="header-icon-box">📋</div>
                     <div>
-                        <h2>Step 1: Course Details & Google Sheet Mapping</h2>
-                        <p class="subtitle">Enter the course identifier and paste the instructor's tracking spreadsheet link.</p>
+                        <h2>Step 1: Course Details & Spreadsheet Mapping</h2>
+                        <p class="subtitle">Specify course metadata and link your Google Spreadsheet for progression synchronization.</p>
                     </div>
                 </div>
 
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="course-name">Course Title <span class="req">*</span></label>
-                        <input type="text" id="course-name" placeholder="e.g. Data Structures & Algorithms">
+                        <input type="text" id="course-name" placeholder="e.g. Design & Analysis of Algorithms">
                     </div>
                     <div class="form-group">
-                        <label for="course-code">Course Code / Acronym <span class="req">*</span></label>
-                        <input type="text" id="course-code" placeholder="e.g. DSA, OS, PHY101">
-                        <small class="helper-text">Used for Calendar auto-matching and pairing codes.</small>
+                        <label for="course-code">Course Identifier / Code <span class="req">*</span></label>
+                        <input type="text" id="course-code" placeholder="e.g. DAA, OS, CS301">
+                        <small class="helper-text">Used for calendar event matching and client activation.</small>
                     </div>
                     <div class="form-group">
                         <label for="teacher-email">Instructor Email</label>
                         <input type="email" id="teacher-email" placeholder="e.g. instructor@university.edu">
-                        <small class="helper-text">Summary emails will be sent here after every lecture.</small>
+                        <small class="helper-text">Post-lecture recaps and coverage alerts will be delivered here.</small>
                     </div>
                     <div class="form-group">
-                        <label for="calendar-id">Google Calendar ID / Account Email</label>
-                        <input type="text" id="calendar-id" placeholder="e.g. instructor@gmail.com or primary">
-                        <small class="helper-text">Class Tracker monitors this calendar for class timings.</small>
+                        <label for="calendar-id">Calendar Account or Identifier</label>
+                        <input type="text" id="calendar-id" placeholder="e.g. instructor@university.edu or primary">
+                        <small class="helper-text">Monitored for lecture schedule time slots.</small>
                     </div>
                     <div class="form-group full-width">
-                        <label for="sheet-url">Google Sheet URL or ID <span class="req">*</span></label>
+                        <label for="sheet-url">Google Spreadsheet URL or ID <span class="req">*</span></label>
                         <div class="input-with-action">
-                            <input type="text" id="sheet-url" placeholder="Paste your Google Spreadsheet link (e.g. https://docs.google.com/spreadsheets/d/...)">
+                            <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/...">
                             <button type="button" class="btn btn-secondary" id="btn-verify-sheet">
                                 <span class="btn-spinner hidden" id="sheet-verify-spinner"></span>
-                                <span class="btn-text">🔍 Connect & Inspect Sheet</span>
+                                <span class="btn-text">Verify Access</span>
                             </button>
                         </div>
                     </div>
                     <div class="form-group full-width bot-share-banner">
                         <div class="bot-share-reminder">
-                            <span class="reminder-icon">🔑</span>
                             <div class="reminder-content">
-                                <span>Share both your <strong>Google Sheet</strong> (as Editor) and <strong>Google Calendar</strong> with:</span>
+                                <span class="reminder-label">Permission Notice:</span>
+                                <span>Ensure both your <strong>Google Sheet</strong> (as Editor) and <strong>Google Calendar</strong> are shared with the service account:</span>
                                 <div class="bot-email-chip">
                                     <code id="bot-service-email">class-tracker-bot@class-tracker-507704.iam.gserviceaccount.com</code>
-                                    <button type="button" class="btn btn-xs btn-secondary" id="btn-copy-bot-email">📋 Copy Bot Email</button>
+                                    <button type="button" class="btn btn-xs btn-outline" id="btn-copy-bot-email">Copy Address</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sheet Verification Result Box (Hidden by default until inspected) -->
+                <!-- Sheet Verification Result Box -->
                 <div class="verification-box hidden" id="sheet-verification-box">
                     <div class="verification-header">
                         <div class="v-status-badge verified" id="v-status-badge">
-                            <span class="v-icon">✅</span>
+                            <span class="v-dot"></span>
                             <span class="v-title" id="v-sheet-title">Connected</span>
                         </div>
                         <div class="v-column-badge" id="v-col-badge">
-                            <span>Columns Verified</span>
+                            <span>Columns Validated</span>
                         </div>
                     </div>
 
@@ -171,7 +183,7 @@
                         <div class="form-group inline">
                             <label for="sheet-tab-select">Target Worksheet Tab:</label>
                             <select id="sheet-tab-select" class="custom-select">
-                                <option value="" disabled selected>Connect your sheet first to view tabs</option>
+                                <option value="" disabled selected>Connect spreadsheet first to load tabs</option>
                             </select>
                         </div>
                     </div>
@@ -185,35 +197,41 @@
                 </div>
             </div>
 
-            <!-- STEP 2: Syllabus Document Auto-Ingestion -->
+            <!-- STEP 2: Syllabus Ingestion -->
             <div class="wizard-step-card" id="step-content-2">
                 <div class="card-header">
-                    <div class="header-icon-box">🤖</div>
                     <div>
-                        <h2>Step 2: Syllabus & Curriculum Auto-Ingestion</h2>
-                        <p class="subtitle">Upload any syllabus document (PDF, DOCX, XLSX, TXT) or paste raw text. The AI extracts structured units automatically.</p>
+                        <h2>Step 2: Syllabus Ingestion & Structure</h2>
+                        <p class="subtitle">Upload your course syllabus (PDF, DOCX, XLSX, TXT) or paste outline text. The parser automatically structures units, learning objectives, and assignments.</p>
                     </div>
                 </div>
 
                 <!-- Ingestion Tabs -->
                 <div class="ingest-tabs">
-                    <button type="button" class="ingest-tab active" data-ingest="file">📁 Upload Document (PDF/DOCX/Excel)</button>
-                    <button type="button" class="ingest-tab" data-ingest="text">📝 Paste Syllabus Text</button>
+                    <button type="button" class="ingest-tab active" data-ingest="file">Upload Document (PDF, DOCX, Excel)</button>
+                    <button type="button" class="ingest-tab" data-ingest="text">Paste Syllabus Text</button>
                 </div>
 
                 <!-- File Upload Mode -->
                 <div class="ingest-panel active" id="ingest-panel-file">
                     <div class="dropzone" id="syllabus-dropzone">
-                        <div class="dropzone-icon">📄</div>
-                        <h3>Drag & Drop Syllabus Document Here</h3>
-                        <p>Supports <strong>PDF</strong>, <strong>Word (.docx)</strong>, <strong>Excel (.xlsx)</strong>, or <strong>Text (.txt)</strong></p>
+                        <div class="dropzone-svg-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="12" y1="18" x2="12" y2="12"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
+                            </svg>
+                        </div>
+                        <h3>Upload Course Outline or Syllabus</h3>
+                        <p>Supported formats: <strong>PDF</strong>, <strong>DOCX</strong>, <strong>XLSX / Excel</strong>, <strong>TXT</strong></p>
                         <input type="file" id="syllabus-file-input" accept=".pdf,.docx,.doc,.xlsx,.xls,.txt,.md" hidden>
                         <button type="button" class="btn btn-secondary" onclick="document.getElementById('syllabus-file-input').click()">
-                            Browse Files
+                            Select File
                         </button>
                         <div class="selected-file-chip hidden" id="file-chip">
                             <span class="chip-name" id="file-chip-name">syllabus.pdf</span>
-                            <button type="button" class="chip-remove" id="file-chip-remove">×</button>
+                            <button type="button" class="chip-remove" id="file-chip-remove" aria-label="Remove File">×</button>
                         </div>
                     </div>
                 </div>
@@ -221,15 +239,15 @@
                 <!-- Text Paste Mode -->
                 <div class="ingest-panel" id="ingest-panel-text">
                     <div class="form-group">
-                        <textarea id="syllabus-raw-text" rows="8" placeholder="Paste your course outline, lecture list, or syllabus topics here..."></textarea>
+                        <textarea id="syllabus-raw-text" rows="8" placeholder="Paste your course outline, lecture timetable, or unit list here..."></textarea>
                     </div>
                 </div>
 
                 <!-- Extract Action Bar -->
                 <div class="extract-action-bar">
-                    <button type="button" class="btn btn-accent btn-large" id="btn-run-extraction">
+                    <button type="button" class="btn btn-primary btn-large" id="btn-run-extraction">
                         <span class="btn-spinner hidden" id="extract-spinner"></span>
-                        <span class="btn-text">⚡ AI Auto-Extract Course Units with Groq</span>
+                        <span class="btn-text">Parse & Structure Curriculum Units</span>
                     </button>
                 </div>
 
@@ -237,10 +255,10 @@
                 <div class="extracted-units-container" id="extracted-units-container">
                     <div class="units-header">
                         <div class="units-count-badge">
-                            <span id="units-count">0</span> Units Extracted
+                            <span id="units-count">0</span> Units Parsed
                         </div>
                         <div class="units-actions">
-                            <button type="button" class="btn btn-sm btn-secondary" id="btn-add-unit">➕ Add Custom Unit</button>
+                            <button type="button" class="btn btn-sm btn-secondary" id="btn-add-unit">+ Add Unit Row</button>
                         </div>
                     </div>
 
@@ -251,7 +269,7 @@
                                     <th width="10%">Unit ID</th>
                                     <th width="8%">Wk</th>
                                     <th width="24%">Topic</th>
-                                    <th width="24%">Core Concepts</th>
+                                    <th width="24%">Key Concepts</th>
                                     <th width="18%">Classwork</th>
                                     <th width="16%">Homework</th>
                                     <th width="6%">Action</th>
@@ -275,10 +293,9 @@
             <!-- STEP 3: Review & Instructor Settings -->
             <div class="wizard-step-card" id="step-content-3">
                 <div class="card-header">
-                    <div class="header-icon-box">⚙️</div>
                     <div>
-                        <h2>Step 3: Review & Instructor Settings</h2>
-                        <p class="subtitle">Confirm settings before generating the universal pairing code.</p>
+                        <h2>Step 3: Review & Delivery Parameters</h2>
+                        <p class="subtitle">Confirm course profile and timetable filters before generating the activation token.</p>
                     </div>
                 </div>
 
@@ -288,11 +305,11 @@
                         <span class="sc-value" id="sc-course-name">—</span>
                     </div>
                     <div class="summary-card">
-                        <span class="sc-label">Subject Code</span>
+                        <span class="sc-label">Course Identifier</span>
                         <span class="sc-value" id="sc-course-code">—</span>
                     </div>
                     <div class="summary-card">
-                        <span class="sc-label">Google Sheet Tab</span>
+                        <span class="sc-label">Spreadsheet Tab</span>
                         <span class="sc-value" id="sc-sheet-tab">—</span>
                     </div>
                     <div class="summary-card">
@@ -302,46 +319,50 @@
                 </div>
 
                 <div class="settings-box">
-                    <h3>⚡ Intelligent Calendar Auto-Detection</h3>
-                    <p>Class Tracker checks the instructor's Google Calendar every 15 seconds. When a lecture title matches <strong><span id="sc-filter-code">Course Code</span></strong> or <strong><span id="sc-filter-name">Course Title</span></strong>, the Mac app will automatically prompt to record and update this course tab.</p>
+                    <h3>Timetable Detection & Filtering</h3>
+                    <p>The system synchronizes upcoming lectures with Google Calendar. When a scheduled event title matches <strong><span id="sc-filter-code">Course Code</span></strong> or <strong><span id="sc-filter-name">Course Title</span></strong>, the desktop application prompts to record and update progression.</p>
                     <div class="setting-item">
                         <div class="si-info">
-                            <span class="si-title">Strict Subject Isolation</span>
-                            <span class="si-desc">Automatically ignores other subjects (e.g. DSA, GenAI, IT, and non-lecture meetings).</span>
+                            <span class="si-title">Subject Isolation</span>
+                            <span class="si-desc">Excludes unrelated lectures and non-instructional timetable events automatically.</span>
                         </div>
-                        <span class="badge badge-success">Active ✅</span>
+                        <span class="badge badge-neutral">Enabled</span>
                     </div>
                     <div class="setting-item">
                         <div class="si-info">
-                            <span class="si-title">Column N (Carry To) Protection</span>
-                            <span class="si-desc">Preserves manual carry-over tags without overwriting.</span>
+                            <span class="si-title">Column Protection</span>
+                            <span class="si-desc">Preserves manual carry-over tags, instructor notes, and custom assessments.</span>
                         </div>
-                        <span class="badge badge-success">Protected ✅</span>
+                        <span class="badge badge-neutral">Protected</span>
                     </div>
                 </div>
 
                 <div class="card-footer">
                     <button type="button" class="btn btn-secondary" id="btn-step3-back">← Back</button>
-                    <button type="button" class="btn btn-accent btn-large" id="btn-save-course">
+                    <button type="button" class="btn btn-primary btn-large" id="btn-save-course">
                         <span class="btn-spinner hidden" id="save-spinner"></span>
-                        <span class="btn-text">🚀 Save Course & Generate Pairing Code</span>
+                        <span class="btn-text">Save Course & Generate Activation Code</span>
                     </button>
                 </div>
             </div>
 
-            <!-- STEP 4: Pairing Code & Universal Activation -->
+            <!-- STEP 4: Pairing Code & Activation -->
             <div class="wizard-step-card" id="step-content-4">
                 <div class="pairing-success-card">
-                    <div class="success-icon">🎉</div>
-                    <h2>Course Configured & Ready to Pair!</h2>
-                    <p class="subtitle">Enter this 6-digit code in the macOS app to instantly connect this course.</p>
+                    <div class="success-mark">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <h2>Course Configured & Ready for Activation</h2>
+                    <p class="subtitle">Enter this activation code in the macOS client to connect this course profile.</p>
 
-                    <!-- Giant Glowing Code Display -->
+                    <!-- Monochromatic High-Contrast Code Box -->
                     <div class="code-showcase-box">
-                        <div class="code-label">YOUR UNIVERSAL PAIRING CODE</div>
+                        <div class="code-label">COURSE ACTIVATION CODE</div>
                         <div class="code-display" id="pairing-code-display">---</div>
-                        <button type="button" class="btn btn-sm btn-secondary" id="btn-copy-code">
-                            📋 Copy Code
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-copy-code">
+                            Copy Code
                         </button>
                     </div>
 
@@ -349,37 +370,37 @@
                     <div class="client-download-box">
                         <div class="cd-info">
                             <div class="cd-title">Universal macOS Client</div>
-                            <div class="cd-desc">One single installer handles all your courses. Built-in audio engine, no terminal required.</div>
+                            <div class="cd-desc">A single client installation supports all courses. Native audio capture engine included.</div>
                         </div>
                         <div class="cd-actions">
                             <a href="/api/download-dmg" class="btn btn-primary btn-large" download>
-                                📥 Download ClassTracker.dmg (42 MB)
+                                Download ClassTracker.dmg (42 MB)
                             </a>
                         </div>
                     </div>
 
-                    <!-- 3-Step Instruction Guide -->
+                    <!-- Setup Steps -->
                     <div class="instruction-steps-grid">
                         <div class="inst-step">
-                            <div class="inst-num">1</div>
-                            <h4>Install App</h4>
-                            <p>Open <code>ClassTracker_Installer.dmg</code> and drag <strong>ClassTracker.app</strong> into Applications.</p>
+                            <div class="inst-num">01</div>
+                            <h4>Install Application</h4>
+                            <p>Open <code>ClassTracker_Installer.dmg</code> and move <strong>ClassTracker.app</strong> into Applications.</p>
                         </div>
                         <div class="inst-step">
-                            <div class="inst-num">2</div>
-                            <h4>Open App</h4>
-                            <p>Right-Click <code>ClassTracker.app</code> in Applications and choose <strong>Open</strong> (first time only).</p>
+                            <div class="inst-num">02</div>
+                            <h4>Launch</h4>
+                            <p>Open <strong>ClassTracker.app</strong> from Applications or Spotlight search.</p>
                         </div>
                         <div class="inst-step">
-                            <div class="inst-num">3</div>
-                            <h4>Enter Code</h4>
-                            <p>Enter your 6-digit code: <strong id="inst-code-strong">YOUR-CODE</strong>. Done! The graduation cap appears in your menu bar.</p>
+                            <div class="inst-num">03</div>
+                            <h4>Activate</h4>
+                            <p>Enter code <strong id="inst-code-strong">YOUR-CODE</strong> when prompted. The application begins monitoring your timetable.</p>
                         </div>
                     </div>
 
                     <div class="card-footer center">
                         <button type="button" class="btn btn-secondary" id="btn-view-dashboard">
-                            📊 View on Courses Dashboard →
+                            View on Courses Dashboard →
                         </button>
                     </div>
                 </div>
@@ -394,47 +415,35 @@
             <div class="dashboard-header">
                 <div>
                     <h2>Active Courses & Live Syllabus Tracking</h2>
-                    <p class="subtitle">Real-time syllabus progression reading directly from your Google Sheets.</p>
+                    <p class="subtitle">Real-time syllabus completion reading directly from your connected Google Spreadsheets.</p>
                 </div>
                 <div class="dashboard-header-actions">
                     <button type="button" class="btn btn-secondary" id="btn-refresh-dashboard">
-                        🔄 Refresh Stats
+                        Refresh Data
                     </button>
                     <button type="button" class="btn btn-primary" onclick="switchToTab('onboarding')">
-                        ➕ Add Another Course
+                        + Add Course
                     </button>
                 </div>
             </div>
 
-            <!-- Summary KPI Metric Cards -->
+            <!-- Summary KPI Metrics -->
             <div class="metrics-grid">
                 <div class="metric-card">
-                    <div class="m-icon">📚</div>
-                    <div class="m-data">
-                        <span class="m-value" id="metric-total-courses">1</span>
-                        <span class="m-label">Active Courses</span>
-                    </div>
+                    <div class="m-label">Active Courses</div>
+                    <div class="m-value" id="metric-total-courses">0</div>
                 </div>
                 <div class="metric-card">
-                    <div class="m-icon">🎯</div>
-                    <div class="m-data">
-                        <span class="m-value" id="metric-total-units">50</span>
-                        <span class="m-label">Curriculum Units</span>
-                    </div>
+                    <div class="m-label">Curriculum Units</div>
+                    <div class="m-value" id="metric-total-units">0</div>
                 </div>
                 <div class="metric-card">
-                    <div class="m-icon">✅</div>
-                    <div class="m-data">
-                        <span class="m-value" id="metric-completed-units">--</span>
-                        <span class="m-label">Units Completed</span>
-                    </div>
+                    <div class="m-label">Units Completed</div>
+                    <div class="m-value" id="metric-completed-units">0</div>
                 </div>
                 <div class="metric-card">
-                    <div class="m-icon">📈</div>
-                    <div class="m-data">
-                        <span class="m-value" id="metric-overall-pct">--%</span>
-                        <span class="m-label">Syllabus Completion</span>
-                    </div>
+                    <div class="m-label">Syllabus Completion</div>
+                    <div class="m-value" id="metric-overall-pct">0%</div>
                 </div>
             </div>
 
@@ -447,12 +456,12 @@
             <div class="live-sheet-viewer-box" id="live-sheet-viewer-box">
                 <div class="lsv-header">
                     <div>
-                        <h3 id="lsv-title">Live Spreadsheet Progression</h3>
-                        <p class="subtitle" id="lsv-subtitle">Connected to Google Sheet · Auto-synced after every class</p>
+                        <h3 id="lsv-title">Spreadsheet Progression</h3>
+                        <p class="subtitle" id="lsv-subtitle">Synchronized with Google Sheets</p>
                     </div>
                     <div class="lsv-actions">
-                        <a href="#" target="_blank" class="btn btn-sm btn-secondary" id="lsv-open-sheet-link">
-                            🔗 Open in Google Sheets
+                        <a href="#" target="_blank" class="btn btn-sm btn-outline" id="lsv-open-sheet-link">
+                            Open in Google Sheets ↗
                         </a>
                     </div>
                 </div>
@@ -464,10 +473,10 @@
                                 <th width="6%">Row</th>
                                 <th width="12%">Unit ID</th>
                                 <th width="28%">Topic</th>
-                                <th width="12%">Date Taught</th>
+                                <th width="14%">Date Taught</th>
                                 <th width="12%">Status</th>
-                                <th width="10%">% Complete</th>
-                                <th width="20%">Classwork / Notes</th>
+                                <th width="10%">Completion</th>
+                                <th width="18%">Notes / Classwork</th>
                             </tr>
                         </thead>
                         <tbody id="lsv-table-body">
@@ -485,40 +494,41 @@
         <section class="tab-panel" id="panel-app">
             <div class="app-hub-hero">
                 <div class="hero-content">
-                    <div class="badge badge-accent">Universal Client Architecture</div>
-                    <h2>One Single App for All Your Courses</h2>
-                    <p>No need to install separate apps for DAA, Operating Systems, or Data Structures. The universal client automatically detects which lecture you're teaching based on your Google Calendar and switches subjects seamlessly.</p>
+                    <div class="badge badge-neutral">Client Architecture</div>
+                    <h2>One Application for All Your Courses</h2>
+                    <p>Install once across all subjects. The desktop client automatically detects current lectures based on timetable synchronization and switches course tracking seamlessly.</p>
 
                     <div class="hero-actions">
-                        <a href="/api/download-dmg" class="btn btn-accent btn-large" download>
-                            📥 Download ClassTracker.dmg (42 MB)
+                        <a href="/api/download-dmg" class="btn btn-primary btn-large" download>
+                            Download ClassTracker.dmg (42 MB)
                         </a>
                         <button type="button" class="btn btn-secondary" id="btn-copy-command">
-                            📋 Copy Gatekeeper Terminal Command
+                            Copy Gatekeeper Terminal Command
                         </button>
                     </div>
-                    <small class="helper-text">Works on macOS 12 Monterey, macOS 13 Ventura, macOS 14 Sonoma, macOS 15 Sequoia (Apple Silicon & Intel)</small>
+                    <small class="helper-text">macOS 12 Monterey, macOS 13 Ventura, macOS 14 Sonoma, macOS 15 Sequoia (Apple Silicon & Intel)</small>
                 </div>
 
                 <div class="app-window-mockup">
                     <div class="mockup-header">
                         <div class="mockup-dots">
-                            <span class="dot red"></span>
-                            <span class="dot yellow"></span>
-                            <span class="dot green"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
                         </div>
-                        <span class="mockup-title">🎓 Class Tracker (Menu Bar)</span>
+                        <span class="mockup-title">Class Tracker (Menu Bar)</span>
                     </div>
                     <div class="mockup-menu">
-                        <div class="menu-item active">🎓 Status: Active & Monitoring</div>
-                        <div class="menu-item">📚 Active Subject: [ DAA ▾ ]</div>
-                        <div class="menu-item highlight">📅 Next Class: DAA at 2:25 PM</div>
-                        <div class="menu-item">🎙️ Start Recording Now...</div>
-                        <div class="menu-item">🔄 Sync Google Calendar Now</div>
-                        <div class="menu-item">📊 Open Course Google Sheet</div>
+                        <div class="menu-item active">Status: Active & Monitoring</div>
+                        <div class="menu-item">Active Course: [ DAA ]</div>
+                        <div class="menu-item highlight">Next Class: DAA at 2:25 PM</div>
+                        <div class="menu-item">Start Recording Now...</div>
+                        <div class="menu-item">Sync Google Calendar Now</div>
+                        <div class="menu-item">Open Course Google Sheet</div>
                         <div class="menu-divider"></div>
-                        <div class="menu-item">➕ Add Another Course Pairing Code...</div>
-                        <div class="menu-item text-danger">❌ Quit Class Tracker</div>
+                        <div class="menu-item">Pair New Subject via Code...</div>
+                        <div class="menu-item">Disconnect All Paired Courses...</div>
+                        <div class="menu-item text-danger">Quit Class Tracker</div>
                     </div>
                 </div>
             </div>
@@ -526,67 +536,66 @@
             <!-- Features Grid -->
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="f-icon">🔄</div>
-                    <h4>Multi-Course Calendar Switching</h4>
-                    <p>When a calendar event triggers for DAA, the app activates the DAA curriculum. When your OS lecture begins, it seamlessly switches to the OS tab.</p>
+                    <h4>Multi-Course Timetable Switching</h4>
+                    <p>Detects scheduled calendar events and automatically routes audio and progression to the correct course worksheet.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="f-icon">🎙️</div>
-                    <h4>Embedded Audio Engine</h4>
-                    <p>Bundles native high-efficiency audio capture directly inside the app bundle. Zero dependencies or Homebrew packages required.</p>
+                    <h4>Native Audio Capture</h4>
+                    <p>Includes high-efficiency native audio capture within the application bundle. Zero third-party package dependencies.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="f-icon">🛡️</div>
-                    <h4>Zero-Coverage Protection</h4>
-                    <p>If you test the mic or hold a quick 2-minute non-instructional chat, the guardrail prevents overwriting existing syllabus rows.</p>
+                    <h4>Coverage Protection</h4>
+                    <p>Non-instructional audio and test recordings are prevented from modifying existing syllabus records.</p>
                 </div>
             </div>
         </section>
 
-        <!-- TAB 4: Email Notifications (SMTP Dispatch) -->
+
+        <!-- =================================================================== -->
+        <!-- TAB 4: EMAIL NOTIFICATIONS -->
+        <!-- =================================================================== -->
         <section class="tab-panel" id="panel-email-settings">
             <div class="view-header">
                 <div>
-                    <h2>✉️ Automatic Email Notifications (Gmail SMTP)</h2>
-                    <p class="subtitle">Configure the email service that dispatches post-lecture summary reports to instructors.</p>
+                    <h2>Email Notifications (SMTP)</h2>
+                    <p class="subtitle">Configure automated delivery of post-lecture summaries and syllabus progress reports to instructors.</p>
                 </div>
             </div>
 
-            <div class="wizard-step-card active" style="max-width: 680px; margin: 0 auto;">
+            <div class="wizard-step-card active" style="max-width: 640px; margin: 0 auto;">
                 <div class="card-header">
-                    <div class="header-icon-box">🔐</div>
                     <div>
-                        <h3>Gmail Sender Credentials</h3>
-                        <p class="subtitle">Saved securely to your local user environment (<code>~/.classtracker/config/.env</code>).</p>
+                        <h3>Sender Credentials</h3>
+                        <p class="subtitle">Stored locally in your environment configuration (<code>~/.classtracker/config/.env</code>).</p>
                     </div>
                 </div>
 
                 <div class="form-grid" style="grid-template-columns: 1fr;">
                     <div class="form-group full-width">
                         <label for="smtp-sender-email">Sender Gmail Address <span class="req">*</span></label>
-                        <input type="email" id="smtp-sender-email" placeholder="e.g. notifications@gmail.com or your email">
-                        <small class="helper-text">Emails will be dispatched from this account using Gmail's secure SMTP server.</small>
+                        <input type="email" id="smtp-sender-email" placeholder="e.g. notifications@yourdomain.com">
+                        <small class="helper-text">Emails will be dispatched via Google SMTP service.</small>
                     </div>
 
                     <div class="form-group full-width">
                         <label for="smtp-app-password">Google App Password (16 Characters) <span class="req">*</span></label>
                         <input type="password" id="smtp-app-password" placeholder="e.g. abcd efgh ijkl mnop">
                         <small class="helper-text">
-                            Generate this at <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color: var(--primary);">myaccount.google.com/apppasswords</a>. Standard Google account passwords are not accepted.
+                            Generate an App Password at <a href="https://myaccount.google.com/apppasswords" target="_blank">myaccount.google.com/apppasswords</a>. Standard account passwords are not accepted by Google SMTP.
                         </small>
                     </div>
                 </div>
 
                 <div class="card-footer" style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center;">
-                    <div id="email-status-text" style="font-size: 0.9rem; color: var(--text-muted);">
+                    <div id="email-status-text" style="font-size: 0.875rem; color: var(--text-muted);">
                         Checking configuration...
                     </div>
-                    <div style="display: flex; gap: 12px;">
+                    <div style="display: flex; gap: 10px;">
                         <button type="button" class="btn btn-secondary" id="btn-test-email">
-                            🧪 Send Test Email
+                            Send Test Email
                         </button>
                         <button type="button" class="btn btn-primary" id="btn-save-email">
-                            💾 Save Credentials
+                            Save Settings
                         </button>
                     </div>
                 </div>
@@ -595,7 +604,7 @@
 
     </main>
 
-    <!-- Notification Toast -->
+    <!-- Notification Toast Container -->
     <div class="toast-container" id="toast-container"></div>
 
     <script src="/static/js/app.js"></script>

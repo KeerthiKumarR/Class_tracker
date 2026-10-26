@@ -331,12 +331,12 @@ function initSyllabusIngestion() {
                 }
             } else if (data.units && data.units.length > 0) {
                 renderExtractedUnits(data.units);
-                showToast(`✅ Successfully extracted ${data.units.length} syllabus topics!`, 'success');
+                showToast(`Successfully structured ${data.units.length} syllabus units.`, 'success');
             } else {
                 showToast('No structured units could be extracted from this document.', 'error');
             }
         } catch (err) {
-            showToast('AI Parsing Error: ' + err.message, 'error');
+            showToast('Parsing Error: ' + err.message, 'error');
         } finally {
             spinner.classList.add('hidden');
             btn.disabled = false;
@@ -642,7 +642,7 @@ function initAudioSandbox() {
         const spinner = document.getElementById('audio-test-spinner');
 
         terminalBox.classList.remove('hidden');
-        terminalOut.textContent = `[UPLOAD] Uploading ${selectedAudio.name} to AI pipeline...\n[GROQ] Initializing Whisper speech-to-text...\n`;
+        terminalOut.textContent = `[UPLOAD] Uploading ${selectedAudio.name}...\n[TRANSCRIPTION] Transcribing lecture audio...\n`;
         statusBadge.textContent = 'Processing...';
         btn.disabled = true;
         spinner.classList.remove('hidden');
@@ -661,10 +661,10 @@ function initAudioSandbox() {
             terminalOut.textContent += JSON.stringify(data, null, 2);
 
             if (res.ok && data.status === 'success') {
-                statusBadge.textContent = 'Completed ✅';
-                showToast('Lecture processed and sheet updated successfully!', 'success');
+                statusBadge.textContent = 'Completed';
+                showToast('Lecture processed and sheet updated successfully.', 'success');
             } else {
-                statusBadge.textContent = 'Failed ❌';
+                statusBadge.textContent = 'Failed';
                 showToast('Processing encountered warnings or errors.', 'error');
             }
         } catch (err) {

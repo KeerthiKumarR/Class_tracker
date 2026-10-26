@@ -11,11 +11,23 @@ import os
 import sys
 import time
 import json
+import re
 import signal
 import webbrowser
 import threading
 import subprocess
 from datetime import datetime, timedelta
+
+# Redirect stdout and stderr to debug.log for bundled app troubleshooting
+try:
+    _log_dir = os.path.expanduser("~/.classtracker")
+    os.makedirs(_log_dir, exist_ok=True)
+    _log_file = open(os.path.join(_log_dir, "debug.log"), "a", buffering=1, encoding="utf-8")
+    sys.stdout = _log_file
+    sys.stderr = _log_file
+    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] ClassTracker process started (PID: {os.getpid()})")
+except Exception:
+    pass
 
 import rumps
 from dotenv import dotenv_values
@@ -669,106 +681,123 @@ class ClassTrackerMenuBarApp(rumps.App):
 
     def on_pair_subject_code(self, _):
         """Prompts instructor for pairing code using native macOS Cocoa window and activates the new subject."""
-        portal_file = os.path.expanduser("~/.classtracker/config/portal_url.txt")
-        saved_portal = self.config.get("PORTAL_URL") or ""
-        if not saved_portal and os.path.exists(portal_file):
+        try:
+            print("[INFO] on_pair_subject_code invoked.")
+            portal_file = os.path.expanduser("~/.classtracker/config/portal_url.txt")
+            saved_portal = self.config.get("PORTAL_URL") or ""
+            if not saved_portal and os.path.exists(portal_file):
+                try:
+                    with open(portal_file, "r") as pf:
+                        p = pf.read().strip()
+                        if p:
+                            saved_portal = p
+                except Exception:
+                    pass
+            if not saved_portal:
+                saved_portal = "https://class-tracker-pgo5.onrender.com"
+
+            # Check clipboard for potential pairing code (e.g. DAA-0183)
+            clip_code = ""
             try:
-                with open(portal_file, "r") as pf:
-                    p = pf.read().strip()
-                    if p:
-                        saved_portal = p
+                res_clip = subprocess.run(["pbpaste"], capture_output=True, text=True, timeout=2)
+                c = res_clip.stdout.strip()
+                if "-" in c or (2 <= len(c) <= 10 and c.isalnum()):
+                    clip_code = c
             except Exception:
                 pass
-        if not saved_portal:
-            saved_portal = "https://class-tracker-pgo5.onrender.com"
 
-        # Check clipboard for potential pairing code (e.g. DAA-0183)
-        clip_code = ""
-        try:
-            res_clip = subprocess.run(["pbpaste"], capture_output=True, text=True, timeout=2)
-            c = res_clip.stdout.strip()
-            if "-" in c or (2 <= len(c) <= 10 and c.isalnum()):
-                clip_code = c
-        except Exception:
-            pass
+            default_input = clip_code or "DAA-0183"
 
-        default_input = clip_code or "DAA-0183"
-
-        # Use native macOS rumps.Window dialog (guaranteed native Cocoa event loop support)
-        window = rumps.Window(
-            message="Enter your Course Pairing Code (e.g. DAA-0183) or Course Code (DAA):",
-            title="Class Tracker Activation 🎓",
-            default_text=default_input,
-            ok="Connect Course",
-            cancel="Cancel",
-            dimensions=(320, 24)
-        )
-        response = window.run()
-        if not response.clicked:
-            return  # User clicked Cancel
-
-        raw_input = response.text.strip()
-        if not raw_input:
-            rumps.alert(
-                title="Class Tracker Notice",
-                message="Pairing code cannot be blank.\n\nPlease enter your course code (e.g. DAA-0183) to connect."
+            # Use native macOS rumps.Window dialog (guaranteed native Cocoa event loop support)
+            window = rumps.Window(
+                message="Enter your Course Pairing Code (e.g. DAA-0183) or Course Code (DAA):",
+                title="Class Tracker Activation 🎓",
+                default_text=default_input,
+                ok="Connect Course",
+                cancel="Cancel",
+                dimensions=(320, 24)
             )
-            return
+            response = window.run()
+            if not response.clicked:
+                print("[INFO] User cancelled pairing window.")
+                return
 
-        code = raw_input.strip()
-        candidate_portals = []
-        url_match = re.search(r'(https?://[^\s/]+(?::\d+)?)', raw_input)
-        if url_match:
-            candidate_portals.append(url_match.group(1))
-            code_match = re.search(r'([A-Za-z0-9]{2,6}-[0-9]{4})', raw_input)
-            if code_match:
-                code = code_match.group(1).upper()
+            raw_input = response.text.strip()
+            print(f"[INFO] User entered pairing text: {raw_input}")
+            if not raw_input:
+                rumps.alert(
+                    title="Class Tracker Notice",
+                    message="Pairing code cannot be blank.\n\nPlease enter your course code (e.g. DAA-0183) to connect."
+                )
+                return
+
+            code = raw_input.strip()
+            candidate_portals = []
+            url_match = re.search(r'(https?://[^\s/]+(?::\d+)?)', raw_input)
+            if url_match:
+                candidate_portals.append(url_match.group(1))
+                code_match = re.search(r'([A-Za-z0-9]{2,6}-[0-9]{4})', raw_input)
+                if code_match:
+                    code = code_match.group(1).upper()
+                else:
+                    code = raw_input.rstrip("/").split("/")[-1].strip().upper()
             else:
-                code = raw_input.rstrip("/").split("/")[-1].strip().upper()
-        else:
-            code = code.upper()
+                code = code.upper()
 
-        if saved_portal and saved_portal not in candidate_portals:
-            candidate_portals.append(saved_portal)
-        if "http://localhost:8080" not in candidate_portals:
-            candidate_portals.append("http://localhost:8080")
+            if saved_portal and saved_portal not in candidate_portals:
+                candidate_portals.append(saved_portal)
+            if "http://localhost:8080" not in candidate_portals:
+                candidate_portals.append("http://localhost:8080")
 
-        import urllib.request
-        data = None
-        successful_portal = None
-
-        for portal in candidate_portals:
+            import urllib.request
+            import ssl
             try:
-                endpoint = f"{portal.rstrip('/')}/api/pair/{code}"
-                req = urllib.request.Request(endpoint, headers={"User-Agent": "ClassTracker-Client/1.0"})
-                with urllib.request.urlopen(req, timeout=25) as resp:
-                    if resp.status == 200:
-                        data = json.loads(resp.read().decode())
-                        successful_portal = portal
-                        break
-            except Exception as e:
-                print(f"[WARN] Connection to {portal} failed: {e}")
-                continue
-
-        if not data or not data.get("success"):
-            err_msg = (data or {}).get("error", f"Could not connect with code '{code}'. Check web portal.")
-            rumps.alert(
-                title="Class Tracker Notice",
-                message=f"{err_msg}\n\nPlease verify that your course is active on https://class-tracker-pgo5.onrender.com"
-            )
-            return
-
-        # Save successful portal address for future pairing requests
-        if successful_portal:
-            try:
-                user_cfg_dir = os.path.expanduser("~/.classtracker/config")
-                os.makedirs(user_cfg_dir, exist_ok=True)
-                with open(portal_file, "w") as pf:
-                    pf.write(successful_portal)
+                import certifi
+                ssl_ctx = ssl.create_default_context(cafile=certifi.where())
             except Exception:
-                pass
+                ssl_ctx = ssl.create_default_context()
+                ssl_ctx.check_hostname = False
+                ssl_ctx.verify_mode = ssl.CERT_NONE
 
-        try:
+            data = None
+            successful_portal = None
+            last_err = ""
+
+            for portal in candidate_portals:
+                try:
+                    endpoint = f"{portal.rstrip('/')}/api/pair/{code}"
+                    print(f"[INFO] Connecting to {endpoint} ...")
+                    req = urllib.request.Request(endpoint, headers={"User-Agent": "ClassTracker-Client/1.0"})
+                    with urllib.request.urlopen(req, context=ssl_ctx, timeout=25) as resp:
+                        if resp.status == 200:
+                            data = json.loads(resp.read().decode())
+                            successful_portal = portal
+                            print(f"[INFO] Connection succeeded from {portal}: {data.get('name')}")
+                            break
+                except Exception as e:
+                    last_err = str(e)
+                    print(f"[WARN] Connection to {portal} failed: {e}")
+                    continue
+
+            if not data or not data.get("success"):
+                err_msg = (data or {}).get("error", f"Could not connect with code '{code}'. ({last_err})")
+                print(f"[WARN] Pairing unsuccessful: {err_msg}")
+                rumps.alert(
+                    title="Class Tracker Notice",
+                    message=f"{err_msg}\n\nPlease verify that your course is active on https://class-tracker-pgo5.onrender.com"
+                )
+                return
+
+            # Save successful portal address for future pairing requests
+            if successful_portal:
+                try:
+                    user_cfg_dir = os.path.expanduser("~/.classtracker/config")
+                    os.makedirs(user_cfg_dir, exist_ok=True)
+                    with open(portal_file, "w") as pf:
+                        pf.write(successful_portal)
+                except Exception:
+                    pass
+
             from profile_manager import save_user_paired_course
             cid = (data.get("course_id") or code.lower()).lower()
             units = data.get("units", [])
@@ -792,6 +821,7 @@ class ClassTrackerMenuBarApp(rumps.App):
                 "curriculum_count": data.get("curriculum_count", len(units)),
             }
             save_user_paired_course(course_obj)
+            print(f"[INFO] Successfully saved user course: {course_obj['name']} ({course_obj['code']})")
 
             self.current_status = "Active & Monitoring"
             self.item_status.title = f"Status: {self.current_status}"
@@ -806,9 +836,12 @@ class ClassTrackerMenuBarApp(rumps.App):
                 message=f"Course '{course_name}' ({code}) is now active!\n\nConnected Sheet Tab: {tab_name}\nUnits Loaded: {curr_count}\n\nClass Tracker is now actively monitoring your Google Calendar for upcoming {code} lectures."
             )
         except Exception as e:
+            print(f"[ERROR in on_pair_subject_code]: {e}")
+            import traceback
+            traceback.print_exc()
             rumps.alert(
                 title="Class Tracker Notice",
-                message=f"Error activating course: {e}"
+                message=f"Error activating course:\n\n{e}"
             )
 
     def on_reset_courses(self, _):

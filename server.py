@@ -23,6 +23,9 @@ Web Portal APIs:
 
 import os
 import sys
+import time
+import threading
+import urllib.request
 import glob
 import json
 import re
@@ -69,6 +72,30 @@ EVENT_LOGS = deque(maxlen=50)
 
 FAILED_DIR = "/tmp/failed"
 os.makedirs(FAILED_DIR, exist_ok=True)
+
+
+def _start_keepalive_worker():
+    """Background worker that pings the public endpoint every 9 minutes to keep Render awake."""
+    def _ping_loop():
+        time.sleep(30)  # Brief warm-up delay after server boot
+        portal_url = os.environ.get("PORTAL_URL", "https://class-tracker-pgo5.onrender.com")
+        health_url = f"{portal_url.rstrip('/')}/healthz"
+        while True:
+            try:
+                req = urllib.request.Request(health_url, headers={"User-Agent": "ClassTracker-KeepAlive/1.0"})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    if resp.status == 200:
+                        print(f"[KEEPALIVE] Periodic ping succeeded: {health_url} (status {resp.status})")
+            except Exception as e:
+                print(f"[KEEPALIVE] Periodic ping note: {e}")
+            time.sleep(540)  # Ping every 9 minutes (Render free idle limit is 15 minutes)
+
+    t = threading.Thread(target=_ping_loop, daemon=True)
+    t.start()
+
+
+# Launch keepalive worker on cloud startup
+_start_keepalive_worker()
 
 
 def get_app_config() -> Dict[str, Any]:

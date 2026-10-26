@@ -230,6 +230,10 @@ class ClassTrackerMenuBarApp(rumps.App):
                     self.item_status.title = f"Status: {self.current_status}"
                 return
 
+            if not self.is_syncing and not self.is_recording and not is_ffmpeg_active:
+                self.current_status = "Active & Monitoring"
+                self.item_status.title = f"Status: {self.current_status}"
+
             if len(paired) == 1:
                 self.item_paired_courses.title = f"📚 Paired Subject: {paired[0].get('code')} (Tab: {paired[0].get('tab_name')})"
             else:

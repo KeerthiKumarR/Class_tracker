@@ -28,13 +28,26 @@ SCOPES = [
 
 def load_config() -> dict:
     cfg = {}
-    for cand in [os.path.join(PROJECT_ROOT, "config", ".env"), os.path.join(PROJECT_ROOT, "config", ".env.client")]:
-        if os.path.exists(cand):
-            cfg.update(dotenv_values(cand))
-            break
+    client_env = os.path.join(PROJECT_ROOT, "config", ".env.client")
+    if os.path.exists(client_env):
+        cfg.update(dotenv_values(client_env))
+    base_env = os.path.join(PROJECT_ROOT, "config", ".env")
+    if os.path.exists(base_env):
+        cfg.update(dotenv_values(base_env))
     user_env = os.path.expanduser("~/.classtracker/config/.env")
     if os.path.exists(user_env):
         cfg.update(dotenv_values(user_env))
+    portal_file = os.path.expanduser("~/.classtracker/config/portal_url.txt")
+    if os.path.exists(portal_file):
+        try:
+            with open(portal_file, "r") as pf:
+                p = pf.read().strip()
+                if p:
+                    cfg["PORTAL_URL"] = p
+        except Exception:
+            pass
+    if not cfg.get("PORTAL_URL"):
+        cfg["PORTAL_URL"] = "https://class-tracker-pgo5.onrender.com"
     return cfg
 
 

@@ -1,6 +1,7 @@
 """Wrapper around gspread for the CourseProgression.xlsx-style tracking sheet."""
 
 import os
+import re
 import json
 import time
 import gspread
@@ -95,14 +96,32 @@ class SheetClient:
             if not all_values:
                 return None, None
 
-            headers = all_values[0]
-            target = unit_id.strip().lower()
+            # Detect real header row (looking for "unit id" or similar, fallback to first row)
+            header_idx = 0
+            for r_i, r in enumerate(all_values[:10]):
+                if any("unit id" in str(c).strip().lower() for c in r):
+                    header_idx = r_i
+                    break
 
-            for idx, row in enumerate(all_values[1:], start=2):
+            headers = all_values[header_idx]
+            target = unit_id.strip().lower()
+            target_num_match = re.search(r'\d+', target)
+            target_num = target_num_match.group(0) if target_num_match else None
+
+            # Search in rows following the header row
+            for idx, row in enumerate(all_values[header_idx + 1:], start=header_idx + 2):
                 if not row:
                     continue
                 col_a_val = str(row[0]).strip().lower()
+
+                # 1. Exact match (case-insensitive)
                 if col_a_val == target:
+                    row_dict = {headers[i]: row[i] if i < len(row) else "" for i in range(len(headers))}
+                    return idx, row_dict
+
+                # 2. Resilient alias match (e.g. DSA-1 vs DAA-1, or DAA1 vs DAA-1)
+                col_num_match = re.search(r'\d+', col_a_val)
+                if target_num and col_num_match and col_num_match.group(0) == target_num:
                     row_dict = {headers[i]: row[i] if i < len(row) else "" for i in range(len(headers))}
                     return idx, row_dict
 

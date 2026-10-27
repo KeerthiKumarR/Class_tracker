@@ -12,6 +12,7 @@ import sys
 import time
 import json
 import re
+import shutil
 import signal
 import webbrowser
 import threading

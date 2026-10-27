@@ -19,7 +19,7 @@
         "Write a lambda capturing a threshold by value to \nfilter a vector"
       ],
       "topic": "Lambdas I",
-      "unit_id": "DSA-1",
+      "unit_id": "DAA-1",
       "week": 1
     },
     {
@@ -42,7 +42,7 @@
         "Write a function that returns a lambda multiplying \nby a captured factor"
       ],
       "topic": "Lambdas II \u2014 uses & tricks",
-      "unit_id": "DSA-2",
+      "unit_id": "DAA-2",
       "week": 1
     },
     {
@@ -66,7 +66,7 @@
         "Group anagrams together using map<string, \nvector<string>>"
       ],
       "topic": "STL Remastered I \u2014 containers",
-      "unit_id": "DSA-3",
+      "unit_id": "DAA-3",
       "week": 1
     },
     {
@@ -92,7 +92,7 @@
         "Answer range-sum queries using prefix sums \n(partial_sum)"
       ],
       "topic": "STL Remastered II \u2014 algorithms",
-      "unit_id": "DSA-4",
+      "unit_id": "DAA-4",
       "week": 1
     },
     {
@@ -116,7 +116,7 @@
         "Find the middle node of a linked list in one pass"
       ],
       "topic": "DSA Basics Quick Revision",
-      "unit_id": "DSA-5",
+      "unit_id": "DAA-5",
       "week": 1
     },
     {
@@ -136,7 +136,7 @@
         "LC219 Contains Duplicate II"
       ],
       "topic": "Hashmaps Fundamentals",
-      "unit_id": "DSA-6",
+      "unit_id": "DAA-6",
       "week": 2
     },
     {
@@ -156,7 +156,7 @@
         "Largest subarray with 0 sum (GfG)"
       ],
       "topic": "Hashmaps - Subarrays & Patterns",
-      "unit_id": "DSA-7",
+      "unit_id": "DAA-7",
       "week": 2
     },
     {
@@ -179,7 +179,7 @@
         "Minimum cost of ropes (GfG)"
       ],
       "topic": "Heaps / Priority Queue Fundamentals",
-      "unit_id": "DSA-8",
+      "unit_id": "DAA-8",
       "week": 2
     },
     {
@@ -200,7 +200,7 @@
         "LC451 Sort Characters By Frequency"
       ],
       "topic": "Advanced Heaps",
-      "unit_id": "DSA-9",
+      "unit_id": "DAA-9",
       "week": 2
     },
     {
@@ -220,7 +220,7 @@
         "LC432 All O one Data Structure"
       ],
       "topic": "Hashmaps & Heaps Combined",
-      "unit_id": "DSA-10",
+      "unit_id": "DAA-10",
       "week": 2
     },
     {
@@ -242,7 +242,7 @@
         "Print all leaf nodes from left to right"
       ],
       "topic": "Trees & DFS traversals",
-      "unit_id": "DSA-11",
+      "unit_id": "DAA-11",
       "week": 3
     },
     {
@@ -263,7 +263,7 @@
         "LC637 Average of Levels in Binary Tree"
       ],
       "topic": "Iterative traversal & BFS",
-      "unit_id": "DSA-12",
+      "unit_id": "DAA-12",
       "week": 3
     },
     {
@@ -287,7 +287,7 @@
         "Check whether two trees have equal height"
       ],
       "topic": "Height, Depth & Diameter",
-      "unit_id": "DSA-13",
+      "unit_id": "DAA-13",
       "week": 3
     },
     {
@@ -311,7 +311,7 @@
         "LC872 Leaf-Similar Trees"
       ],
       "topic": "Balanced check & views",
-      "unit_id": "DSA-14",
+      "unit_id": "DAA-14",
       "week": 3
     },
     {
@@ -332,7 +332,7 @@
         "Diagonal traversal of a binary tree (GfG)"
       ],
       "topic": "Advanced Traversals & Views",
-      "unit_id": "DSA-15",
+      "unit_id": "DAA-15",
       "week": 3
     },
     {
@@ -353,7 +353,7 @@
         "Convert a tree to its mirror in place (GfG)"
       ],
       "topic": "Invert & Symmetric",
-      "unit_id": "DSA-16",
+      "unit_id": "DAA-16",
       "week": 4
     },
     {
@@ -375,7 +375,7 @@
         "LC988 Smallest String Starting From Leaf"
       ],
       "topic": "Path Sum family",
-      "unit_id": "DSA-17",
+      "unit_id": "DAA-17",
       "week": 4
     },
     {
@@ -401,7 +401,7 @@
         "Kth ancestor of a node in a tree (GfG)"
       ],
       "topic": "Lowest Common Ancestor",
-      "unit_id": "DSA-18",
+      "unit_id": "DAA-18",
       "week": 4
     },
     {
@@ -422,7 +422,7 @@
         "LC426 Convert BST to Sorted Doubly Linked List"
       ],
       "topic": "Construct & Flatten",
-      "unit_id": "DSA-19",
+      "unit_id": "DAA-19",
       "week": 4
     },
     {
@@ -445,7 +445,7 @@
         "LC116 Populating Next Right Pointers in Each \nNode"
       ],
       "topic": "Serialize & Tree Utilities",
-      "unit_id": "DSA-20",
+      "unit_id": "DAA-20",
       "week": 4
     },
     {
@@ -466,7 +466,7 @@
         "Count BST nodes lying in a given range (GfG)"
       ],
       "topic": "Search & Insert",
-      "unit_id": "DSA-21",
+      "unit_id": "DAA-21",
       "week": 5
     },
     {
@@ -487,7 +487,7 @@
         "LC255 Verify Preorder Sequence in BST"
       ],
       "topic": "Validate & Min Diff",
-      "unit_id": "DSA-22",
+      "unit_id": "DAA-22",
       "week": 5
     },
     {
@@ -507,7 +507,7 @@
         "Inorder predecessor in a BST (GfG)"
       ],
       "topic": "Delete & Kth smallest",
-      "unit_id": "DSA-23",
+      "unit_id": "DAA-23",
       "week": 5
     },
     {
@@ -531,7 +531,7 @@
         "LC938 Range Sum of BST"
       ],
       "topic": "LCA, Build & Iterator",
-      "unit_id": "DSA-24",
+      "unit_id": "DAA-24",
       "week": 5
     },
     {
@@ -554,7 +554,7 @@
         "LC333 Largest BST Subtree"
       ],
       "topic": "BST Advanced",
-      "unit_id": "DSA-25",
+      "unit_id": "DAA-25",
       "week": 5
     },
     {
@@ -580,7 +580,7 @@
         "Maximize meetings attended in one room (GfG)"
       ],
       "topic": "Greedy choice & intervals",
-      "unit_id": "DSA-26",
+      "unit_id": "DAA-26",
       "week": 6
     },
     {
@@ -602,7 +602,7 @@
         "Maximum number of overlapping intervals (GfG)"
       ],
       "topic": "Merge intervals & platforms",
-      "unit_id": "DSA-27",
+      "unit_id": "DAA-27",
       "week": 6
     },
     {
@@ -624,7 +624,7 @@
         "Minimum number of coins (GfG)"
       ],
       "topic": "Knapsack & job sequencing",
-      "unit_id": "DSA-28",
+      "unit_id": "DAA-28",
       "week": 6
     },
     {
@@ -646,7 +646,7 @@
         "Write-up: a coin system where greedy fails \n(counterexample)"
       ],
       "topic": "Jump family & failure cases",
-      "unit_id": "DSA-29",
+      "unit_id": "DAA-29",
       "week": 6
     },
     {
@@ -670,7 +670,7 @@
         "LC860 Lemonade Change"
       ],
       "topic": "Greedy \u2014 More Patterns",
-      "unit_id": "DSA-30",
+      "unit_id": "DAA-30",
       "week": 6
     },
     {
@@ -692,7 +692,7 @@
         "LC91 Decode Ways"
       ],
       "topic": "DP intro & 1D",
-      "unit_id": "DSA-31",
+      "unit_id": "DAA-31",
       "week": 7
     },
     {
@@ -713,7 +713,7 @@
         "Number of ways to make change (GfG)"
       ],
       "topic": "Coin change family",
-      "unit_id": "DSA-32",
+      "unit_id": "DAA-32",
       "week": 7
     },
     {
@@ -733,7 +733,7 @@
         "Longest common substring (GfG)"
       ],
       "topic": "LIS / LCS lite",
-      "unit_id": "DSA-33",
+      "unit_id": "DAA-33",
       "week": 7
     },
     {
@@ -753,7 +753,7 @@
         "LC221 Maximal Square"
       ],
       "topic": "Grid DP",
-      "unit_id": "DSA-34",
+      "unit_id": "DAA-34",
       "week": 7
     },
     {
@@ -776,7 +776,7 @@
         "LC740 Delete and Earn"
       ],
       "topic": "Subsequence DP",
-      "unit_id": "DSA-35",
+      "unit_id": "DAA-35",
       "week": 7
     },
     {
@@ -799,7 +799,7 @@
         "Minimum subset-sum difference (GfG)"
       ],
       "topic": "0/1 Knapsack",
-      "unit_id": "DSA-36",
+      "unit_id": "DAA-36",
       "week": 8
     },
     {
@@ -820,7 +820,7 @@
         "LC343 Integer Break"
       ],
       "topic": "Unbounded knapsack",
-      "unit_id": "DSA-37",
+      "unit_id": "DAA-37",
       "week": 8
     },
     {
@@ -843,7 +843,7 @@
         "LC161 One Edit Distance"
       ],
       "topic": "Edit distance",
-      "unit_id": "DSA-38",
+      "unit_id": "DAA-38",
       "week": 8
     },
     {
@@ -863,7 +863,7 @@
         "LC1312 Minimum Insertion Steps to Make a \nString Palindrome"
       ],
       "topic": "LCS variants / Partition DP intro",
-      "unit_id": "DSA-39",
+      "unit_id": "DAA-39",
       "week": 8
     },
     {
@@ -886,7 +886,7 @@
         "LC1043 Partition Array for Maximum Sum"
       ],
       "topic": "Partition / Interval DP",
-      "unit_id": "DSA-40",
+      "unit_id": "DAA-40",
       "week": 8
     },
     {
@@ -906,7 +906,7 @@
         "LC1971 Find if Path Exists in Graph"
       ],
       "topic": "Representation & traversal",
-      "unit_id": "DSA-41",
+      "unit_id": "DAA-41",
       "week": 9
     },
     {
@@ -927,7 +927,7 @@
         "LC684 Redundant Connection"
       ],
       "topic": "Cycle & Bipartite",
-      "unit_id": "DSA-42",
+      "unit_id": "DAA-42",
       "week": 9
     },
     {
@@ -950,7 +950,7 @@
         "LC1462 Course Schedule IV"
       ],
       "topic": "Topological sort",
-      "unit_id": "DSA-43",
+      "unit_id": "DAA-43",
       "week": 9
     },
     {
@@ -970,7 +970,7 @@
         "0/1 BFS shortest path (GfG)"
       ],
       "topic": "Weighted paths & MST",
-      "unit_id": "DSA-44",
+      "unit_id": "DAA-44",
       "week": 9
     },
     {
@@ -998,7 +998,7 @@
         "LC1192 Critical Connections in a Network \n(bridges, preview)"
       ],
       "topic": "Graphs \u2014 Extra",
-      "unit_id": "DSA-45",
+      "unit_id": "DAA-45",
       "week": 9
     },
     {
@@ -1021,7 +1021,7 @@
         "Maximum sum of non-adjacent nodes in a tree \n(GfG)"
       ],
       "topic": "Tree DP",
-      "unit_id": "DSA-46",
+      "unit_id": "DAA-46",
       "week": 10
     },
     {
@@ -1043,7 +1043,7 @@
         "LC131 Palindrome Partitioning"
       ],
       "topic": "Backtracking foundations",
-      "unit_id": "DSA-47",
+      "unit_id": "DAA-47",
       "week": 10
     },
     {
@@ -1066,7 +1066,7 @@
         "LC93 Restore IP Addresses"
       ],
       "topic": "Backtracking on grids & constraints",
-      "unit_id": "DSA-48",
+      "unit_id": "DAA-48",
       "week": 10
     },
     {
@@ -1089,7 +1089,7 @@
         "LC11 Container With Most Water"
       ],
       "topic": "Two pointers & sliding window",
-      "unit_id": "DSA-49",
+      "unit_id": "DAA-49",
       "week": 10
     },
     {
@@ -1110,7 +1110,7 @@
         "LC322 Coin Change (DP) end to end"
       ],
       "topic": "Mixed patterns capstone",
-      "unit_id": "DSA-50",
+      "unit_id": "DAA-50",
       "week": 10
     }
   ]

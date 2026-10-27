@@ -133,19 +133,22 @@ import time
 def _transcribe_groq_single_file(client: Groq, file_path: str, model: str, language: str, prompt: str) -> str:
     """Call Groq Whisper API for a single audio file with 3-attempt exponential backoff."""
     lang_param = None if (not language or language.lower() == "auto") else language
-    prompt_text = prompt or "C++ Data Structures and Algorithms lecture covering lambdas, syntax, captures by value and reference, mutable, vectors, std::function, classwork, homework, and problem solving."
+    prompt_text = prompt or "Classroom technical lecture and academic discussion."
 
     last_error = None
     for attempt, delay in enumerate([2, 4, 8], start=1):
         try:
             with open(file_path, "rb") as f:
-                response = client.audio.transcriptions.create(
-                    file=(os.path.basename(file_path), f.read()),
-                    model=model,
-                    language=lang_param,
-                    prompt=prompt_text,
-                    response_format="text",
-                )
+                kwargs = {
+                    "file": (os.path.basename(file_path), f.read()),
+                    "model": model,
+                    "response_format": "text",
+                }
+                if lang_param:
+                    kwargs["language"] = lang_param
+                if prompt_text:
+                    kwargs["prompt"] = prompt_text
+                response = client.audio.transcriptions.create(**kwargs)
             return str(response).strip()
         except Exception as e:
             last_error = e

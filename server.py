@@ -482,20 +482,23 @@ def api_course_detail(course_id: str):
 @app.route("/api/pair/<code>", methods=["GET"])
 def api_pair_client(code: str):
     """Universal macOS App pairing endpoint. Returns payload required to configure the client."""
-    from profile_manager import get_all_courses
-    course = get_course_by_pairing_code(code) or get_course_by_id(code)
-    if not course:
-        prefix = code.split("-")[0].strip().lower()
-        course = get_course_by_id(prefix)
+    clean_code = (code or "").strip()
+    if not clean_code:
+        return jsonify({
+            "success": False,
+            "error": "Pairing code cannot be blank."
+        }), 400
 
-    all_c = get_all_courses()
-    if not course and len(all_c) == 1:
-        course = all_c[0]
+    course = get_course_by_pairing_code(clean_code) or get_course_by_id(clean_code)
+    if not course:
+        prefix = clean_code.split("-")[0].strip().lower()
+        if len(prefix) >= 2:
+            course = get_course_by_id(prefix)
 
     if not course:
         return jsonify({
             "success": False,
-            "error": f"Invalid or expired pairing code '{code}'. Check the web dashboard for active codes."
+            "error": f"Invalid or expired pairing code '{clean_code}'. Check the web dashboard for active codes."
         }), 404
 
     config = get_app_config()

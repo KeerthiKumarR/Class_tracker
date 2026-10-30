@@ -697,17 +697,32 @@ class ClassTrackerMenuBarApp(rumps.App):
             if not saved_portal:
                 saved_portal = "https://class-tracker-pgo5.onrender.com"
 
-            # Check clipboard for potential pairing code (e.g. DAA-0183)
+            # Check clipboard for a VALID pairing code (e.g. DAA-0183) or pairing URL.
+            # Avoid picking up arbitrary text, git diffs, multi-line snippets, or sentences.
             clip_code = ""
+            clip_portal = None
             try:
                 res_clip = subprocess.run(["pbpaste"], capture_output=True, text=True, timeout=2)
-                c = res_clip.stdout.strip()
-                if "-" in c or (2 <= len(c) <= 10 and c.isalnum()):
-                    clip_code = c
+                raw_clip = res_clip.stdout.strip()
+                # Must be single-line and concise
+                if raw_clip and "\n" not in raw_clip and len(raw_clip) <= 120:
+                    # Check 1: Full pairing URL (e.g. https://portal.com/pair/DAA-0183 or /api/pair/DAA-0183)
+                    url_m = re.search(r'^(https?://[^/\s]+(?::\d+)?)(?:/api)?/pair/([A-Za-z0-9_-]+)/?$', raw_clip, re.IGNORECASE)
+                    if url_m:
+                        clip_portal = url_m.group(1).rstrip("/")
+                        clip_code = url_m.group(2).upper()
+                    # Check 2: Standard pairing code like DAA-0183, OS-7319, CS101-1234 (must have exactly 1 hyphen)
+                    elif re.fullmatch(r'[A-Za-z0-9]{2,8}-[A-Za-z0-9]{3,6}', raw_clip):
+                        clip_code = raw_clip.upper()
+                    # Check 3: Short clean course code like DAA, OS, CS101 (2-8 uppercase letters + optional numbers)
+                    elif re.fullmatch(r'[A-Za-z]{2,8}\d{0,4}', raw_clip) and not raw_clip.isdigit():
+                        clip_code = raw_clip.upper()
             except Exception:
                 pass
 
-            default_input = clip_code or "DAA-0183"
+            # If clipboard contained a valid pairing code, use it. Otherwise, default to empty string
+            # so user isn't forced to delete placeholder text or accidental clipboard snippets.
+            default_input = clip_code or ""
 
             # Use native macOS rumps.Window dialog (guaranteed native Cocoa event loop support)
             window = rumps.Window(
@@ -732,25 +747,47 @@ class ClassTrackerMenuBarApp(rumps.App):
                 )
                 return
 
+            extracted_portal = None
             code = raw_input.strip()
-            candidate_portals = []
-            url_match = re.search(r'(https?://[^\s/]+(?::\d+)?)', raw_input)
-            if url_match:
-                candidate_portals.append(url_match.group(1))
-                code_match = re.search(r'([A-Za-z0-9]{2,6}-[0-9]{4})', raw_input)
-                if code_match:
-                    code = code_match.group(1).upper()
-                else:
-                    code = raw_input.rstrip("/").split("/")[-1].strip().upper()
-            else:
-                code = code.upper()
 
+            # Handle case where user pasted a full URL into the input dialog
+            if "://" in raw_input:
+                url_match = re.search(r'(https?://[^\s/]+(?::\d+)?)', raw_input)
+                if url_match:
+                    extracted_portal = url_match.group(1).rstrip("/")
+                code_match = re.search(r'pair/([A-Za-z0-9_-]+)', raw_input, re.IGNORECASE)
+                if code_match:
+                    code = code_match.group(1)
+                else:
+                    path_part = raw_input.rstrip("/").split("?")[0].split("/")[-1].strip()
+                    if path_part and not path_part.startswith("http"):
+                        code = path_part
+
+            # Sanitize code: remove inner whitespace and uppercase
+            code = code.replace(" ", "").upper()
+
+            # Strict validation: prevent random sentences, code diffs, or invalid symbols
+            if not re.fullmatch(r'[A-Za-z0-9_-]{2,20}', code):
+                rumps.alert(
+                    title="Invalid Pairing Code",
+                    message=f"'{raw_input[:35]}' does not match a valid course code format.\n\nPlease enter a course code like 'DAA' or pairing code like 'DAA-0183'."
+                )
+                return
+
+            candidate_portals = []
+            if extracted_portal:
+                candidate_portals.append(extracted_portal)
+            if clip_portal and clip_portal not in candidate_portals:
+                candidate_portals.append(clip_portal)
             if saved_portal and saved_portal not in candidate_portals:
                 candidate_portals.append(saved_portal)
+            if "https://class-tracker-pgo5.onrender.com" not in candidate_portals:
+                candidate_portals.append("https://class-tracker-pgo5.onrender.com")
             if "http://localhost:8080" not in candidate_portals:
                 candidate_portals.append("http://localhost:8080")
 
             import urllib.request
+            import urllib.parse
             import ssl
             try:
                 import certifi
@@ -760,32 +797,59 @@ class ClassTrackerMenuBarApp(rumps.App):
                 ssl_ctx.check_hostname = False
                 ssl_ctx.verify_mode = ssl.CERT_NONE
 
+            safe_code = urllib.parse.quote(code)
             data = None
             successful_portal = None
             last_err = ""
+            is_404 = False
 
             for portal in candidate_portals:
                 try:
-                    endpoint = f"{portal.rstrip('/')}/api/pair/{code}"
+                    endpoint = f"{portal.rstrip('/')}/api/pair/{safe_code}"
                     print(f"[INFO] Connecting to {endpoint} ...")
                     req = urllib.request.Request(endpoint, headers={"User-Agent": "ClassTracker-Client/1.0"})
-                    with urllib.request.urlopen(req, context=ssl_ctx, timeout=25) as resp:
+                    # 40s timeout for Render.com spin-up from cold sleep
+                    with urllib.request.urlopen(req, context=ssl_ctx, timeout=40) as resp:
                         if resp.status == 200:
-                            data = json.loads(resp.read().decode())
-                            successful_portal = portal
-                            print(f"[INFO] Connection succeeded from {portal}: {data.get('name')}")
-                            break
+                            body = resp.read().decode("utf-8")
+                            data = json.loads(body)
+                            if data.get("success"):
+                                successful_portal = portal
+                                print(f"[INFO] Connection succeeded from {portal}: {data.get('name')}")
+                                break
+                except urllib.error.HTTPError as he:
+                    if he.code == 404:
+                        is_404 = True
+                        try:
+                            err_body = json.loads(he.read().decode("utf-8"))
+                            last_err = err_body.get("error", f"Course '{code}' not found (404).")
+                        except Exception:
+                            last_err = f"Course '{code}' not found (404)."
+                    else:
+                        last_err = f"Server returned HTTP {he.code}"
+                    print(f"[WARN] Connection to {portal} returned HTTP {he.code}: {last_err}")
+                except urllib.error.URLError as ue:
+                    if "timed out" in str(ue).lower():
+                        last_err = "Server connection timed out (Render cloud service may be waking up)."
+                    else:
+                        last_err = f"Network connection failed: {ue.reason}"
+                    print(f"[WARN] Connection to {portal} failed: {last_err}")
                 except Exception as e:
                     last_err = str(e)
                     print(f"[WARN] Connection to {portal} failed: {e}")
                     continue
 
             if not data or not data.get("success"):
-                err_msg = (data or {}).get("error", f"Could not connect with code '{code}'. ({last_err})")
+                if is_404:
+                    err_msg = f"Course code '{code}' was not found.\n\nPlease check your web dashboard (https://class-tracker-pgo5.onrender.com) for the active pairing code."
+                elif "timed out" in last_err.lower():
+                    err_msg = f"Connecting to the server timed out.\n\nRender free servers take ~30 seconds to wake up from idle sleep. Please wait 10 seconds and try again!"
+                else:
+                    err_msg = (data or {}).get("error", f"Could not connect with code '{code}'.\n\nDetail: {last_err}")
                 print(f"[WARN] Pairing unsuccessful: {err_msg}")
                 rumps.alert(
                     title="Class Tracker Notice",
-                    message=f"{err_msg}\n\nPlease verify that your course is active on https://class-tracker-pgo5.onrender.com"
+                    message=err_msg
                 )
                 return
 

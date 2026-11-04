@@ -26,7 +26,10 @@ def extract_text_from_file(file_path: str) -> str:
             for i, page in enumerate(reader.pages):
                 text = page.extract_text()
                 if text:
-                    pages_text.append(f"--- Page {i+1} ---\n{text}")
+                    # Clean up fragmented newlines produced by PDF layout engines
+                    clean_page = re.sub(r'(?<=\S)\n \n(?=\S)', ' ', text)
+                    clean_page = re.sub(r'(?<=\S)\n(?=\S)', ' ', clean_page)
+                    pages_text.append(f"--- Page {i+1} ---\n{clean_page}")
             return "\n\n".join(pages_text)
         except Exception as e:
             raise RuntimeError(f"Failed to read PDF: {e}")
@@ -74,12 +77,58 @@ def extract_text_from_file(file_path: str) -> str:
 
 
 def try_parse_structured_table(raw_text: str, course_code: str = "CRS") -> List[Dict[str, Any]]:
-    """Fast, deterministic parser for structured syllabi with lecture numbers (e.g. LEC-1, Lecture 1).
-    Consumes 0 Groq tokens and is immune to rate limits.
+    """Fast, deterministic parser for structured syllabi with:
+    - Daily plans (e.g. Day 1, Day 2, ..., Day 45)
+    - Lecture markers (e.g. LEC-1, Lecture 1, Module 1, Unit 1)
+    Consumes 0 Groq tokens, runs in < 50ms, and avoids token truncation.
     """
     clean_code = (course_code or "CRS").upper().strip()
     
-    # Pattern for LEC-X
+    # Check 1: Day-based plans (e.g. Day 1: Topic, ● Day 2: Topic)
+    day_pattern = re.compile(r'(?:^|\n|[●•\*\-])\s*Day\s+(\d+)[:\s\-]+([^\n○]+)', re.IGNORECASE)
+    day_matches = list(day_pattern.finditer(raw_text))
+    if len(day_matches) >= 3:
+        units = []
+        for idx, m in enumerate(day_matches):
+            day_num = int(m.group(1))
+            topic = m.group(2).strip()
+            
+            start_pos = m.end()
+            end_pos = day_matches[idx + 1].start() if idx + 1 < len(day_matches) else len(raw_text)
+            body = raw_text[start_pos:end_pos]
+            
+            content = []
+            classwork = []
+            homework = []
+            
+            cnt_m = re.search(r'Content:\s*(.*?)(?=(?:Classwork:|Homework:|$))', body, re.DOTALL | re.IGNORECASE)
+            if cnt_m:
+                raw_c = re.sub(r'[○●•\*\-\s]+$', '', cnt_m.group(1)).strip()
+                content = [x.strip() for x in raw_c.split(';') if x.strip()] or [raw_c]
+                
+            cw_m = re.search(r'Classwork:\s*(.*?)(?=(?:Homework:|Content:|$))', body, re.DOTALL | re.IGNORECASE)
+            if cw_m:
+                raw_cw = re.sub(r'[○●•\*\-\s]+$', '', cw_m.group(1)).strip()
+                classwork = [raw_cw] if raw_cw else []
+                
+            hw_m = re.search(r'Homework:\s*(.*?)(?=(?:Content:|Classwork:|$))', body, re.DOTALL | re.IGNORECASE)
+            if hw_m:
+                raw_hw = re.sub(r'[○●•\*\-\s]+$', '', hw_m.group(1)).strip()
+                homework = [raw_hw] if raw_hw else []
+                
+            units.append({
+                'unit_id': f'{clean_code}-{day_num}',
+                'week': (day_num - 1) // 5 + 1,
+                'topic': topic,
+                'content': content,
+                'classwork': classwork,
+                'homework': homework,
+            })
+            
+        units.sort(key=lambda u: int(u['unit_id'].split('-')[1]))
+        return units
+
+    # Check 2: Pattern for LEC-X
     lec_pattern = re.compile(
         r'(?:^|\n)\s*(?:(\d+)\s+)?LEC-(\d+)\s+([^\n•]+?)(?=\s*•|\s*\n|$)(.*?)(?=(?:\n\s*(?:\d+\s+)?LEC-\d+)|\Z)',
         re.DOTALL
@@ -192,7 +241,7 @@ Return strictly valid JSON array [ ... ]."""
         if not m or m in seen_models:
             continue
         seen_models.add(m)
-        tok_limit = 1000 if "qwen" in m else 2500
+        tok_limit = 4096
         try:
             response = client.chat.completions.create(
                 model=m,
@@ -282,20 +331,35 @@ def parse_multi_subject_syllabus(
     text_lower = raw_text.lower()
     code_cand = "CRS"
     name_cand = "Course"
-    if "dsa" in text_lower or "data structure" in text_lower:
-        code_cand = "DSA"
-        name_cand = "Data Structures & Algorithms"
-    elif "daa" in text_lower or "design & analysis" in text_lower:
-        code_cand = "DAA"
-        name_cand = "Design & Analysis of Algorithm (DAA)"
-    elif "os" in text_lower or "operating system" in text_lower:
-        code_cand = "OS"
-        name_cand = "Operating Systems"
+
+    # Match against available spreadsheet tabs first if provided
+    if available_tabs:
+        for t in available_tabs:
+            if t.lower() in ("readme", "instructions", "dashboard", "config", "calendar", "sheet3"):
+                continue
+            if t.lower() in text_lower or t.lower() in raw_text.lower().replace(" ", ""):
+                code_cand = t.upper().replace(" ", "")
+                name_cand = t
+                break
+
+    if code_cand == "CRS":
+        if "genai" in text_lower or "langchain" in text_lower or "llm" in text_lower:
+            code_cand = "GENAI"
+            name_cand = "GenAI & Applied LLMs"
+        elif "dsa" in text_lower or "data structure" in text_lower:
+            code_cand = "DSA"
+            name_cand = "Data Structures & Algorithms"
+        elif "daa" in text_lower or "design & analysis" in text_lower:
+            code_cand = "DAA"
+            name_cand = "Design & Analysis of Algorithm (DAA)"
+        elif "os" in text_lower or "operating system" in text_lower:
+            code_cand = "OS"
+            name_cand = "Operating Systems"
 
     matched_tab = code_cand
     if available_tabs:
         for t in available_tabs:
-            if t.lower() in text_lower or code_cand.lower() in t.lower():
+            if t.lower() == code_cand.lower() or t.lower() in code_cand.lower() or code_cand.lower() in t.lower():
                 matched_tab = t
                 break
 
@@ -366,7 +430,7 @@ CRITICAL RULES:
         if not m or m in seen_models:
             continue
         seen_models.add(m)
-        tok_limit = 1000 if "qwen" in m else 2500
+        tok_limit = 4096
         try:
             response = client.chat.completions.create(
                 model=m,

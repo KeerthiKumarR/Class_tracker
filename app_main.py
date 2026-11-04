@@ -944,8 +944,12 @@ class ClassTrackerMenuBarApp(rumps.App):
 
         target_course = courses[0]
         sheet_id = target_course.get("sheet_id", "")
+        tab_name = target_course.get("tab_name", "")
         if sheet_id:
             url = f"https://docs.google.com/spreadsheets/d/{sheet_id}"
+            tab_gid = target_course.get("tab_gid")
+            if tab_gid:
+                url = f"{url}/edit#gid={tab_gid}"
             webbrowser.open(url)
         else:
             applescript_err = 'display dialog "Google Sheet ID not found for this course profile." with title "Class Tracker" buttons {"OK"} default button "OK" with icon caution giving up after 8'

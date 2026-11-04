@@ -598,7 +598,7 @@ function renderCourseCards(courses) {
                 <button type="button" class="btn btn-sm btn-primary" onclick="loadCourseSheetProgress('${c.id}')">
                     📋 View Live Sheet Progress
                 </button>
-                <a href="https://docs.google.com/spreadsheets/d/${c.sheet_id}" target="_blank" class="btn btn-sm btn-secondary">
+                <a href="${c.tab_url || 'https://docs.google.com/spreadsheets/d/' + c.sheet_id}" id="sheet-link-${c.id}" target="_blank" class="btn btn-sm btn-secondary">
                     📊 Sheet (Tab: ${escapeHtml(c.tab_name)})
                 </a>
                 <a href="/api/download-config/${c.id}" class="btn btn-sm btn-secondary" title="Download .env">
@@ -646,7 +646,13 @@ window.loadCourseSheetProgress = async function(courseId) {
 
         titleEl.textContent = `Live Spreadsheet Progression: ${data.course_name}`;
         subEl.textContent = `Connected to Google Sheet '${data.sheet_title}' (Tab: ${data.tab_name})`;
-        sheetLink.href = `https://docs.google.com/spreadsheets/d/${data.sheet_id || state.sheetId}`;
+        sheetLink.href = data.tab_url || `https://docs.google.com/spreadsheets/d/${data.sheet_id || state.sheetId}`;
+
+        // Also update the course card link if tab_url is available
+        const cardSheetLink = document.getElementById(`sheet-link-${courseId}`);
+        if (cardSheetLink && data.tab_url) {
+            cardSheetLink.href = data.tab_url;
+        }
 
         // Update KPIs
         document.getElementById('metric-completed-units').textContent = data.completed_count;

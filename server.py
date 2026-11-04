@@ -592,12 +592,17 @@ def api_course_progress(course_id: str):
         # Find next unit to teach
         next_unit = next((row for row in data_rows if row["status"].strip().lower() not in ("completed",)), None)
 
+        tab_gid = str(sheet.ws.id) if hasattr(sheet.ws, "id") else ""
+
         return jsonify({
             "success": True,
             "course_id": course["id"],
             "course_name": course["name"],
+            "sheet_id": course["sheet_id"],
             "sheet_title": sheet.ws.spreadsheet.title,
             "tab_name": course["tab_name"],
+            "tab_gid": tab_gid,
+            "tab_url": f"https://docs.google.com/spreadsheets/d/{course['sheet_id']}/edit#gid={tab_gid}" if tab_gid else f"https://docs.google.com/spreadsheets/d/{course['sheet_id']}",
             "total_units": total_units,
             "completed_count": completed_count,
             "started_count": started_count,

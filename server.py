@@ -243,9 +243,12 @@ def verify_sheet():
     if not sheet_input.strip():
         return jsonify({"error": "Please provide a Google Sheet URL or ID"}), 400
 
-    # Extract Sheet ID from URL if full link was provided
+    # Extract Sheet ID and optional tab gid from URL if full link was provided
     match = re.search(r"/spreadsheets/d/([a-zA-Z0-9-_]+)", sheet_input)
     sheet_id = match.group(1) if match else sheet_input.strip()
+
+    target_gid_match = re.search(r'[#&?]gid=([0-9]+)', sheet_input)
+    target_gid = target_gid_match.group(1) if target_gid_match else None
 
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
     creds, sa_path = resolve_service_account_credentials(scopes=scopes)
@@ -265,30 +268,38 @@ def verify_sheet():
                 "col_count": ws.col_count,
             })
 
-        # Smart tab suggestion: ignore metadata tabs (README, instructions, config, dashboard)
-        IGNORE_NAMES = {"readme", "instructions", "info", "changelog", "notes", "config", "dashboard"}
+        # Smart tab suggestion:
+        # Priority 1: If the user pasted a URL with a specific #gid=12345, match that exact tab!
         suggested_tab = None
         has_topic_col = False
         detected_headers = []
 
-        # Check worksheets for valid syllabus columns first
-        for t in tabs_info:
-            t_name = t["title"].strip()
-            if t_name.lower() in IGNORE_NAMES:
-                continue
-            try:
-                target_ws = sh.worksheet(t_name)
-                header_vals = target_ws.get_all_values()
-                for r in header_vals[:5]:
-                    if any(str(c).strip().lower() in ("topic", "unit id", "date taught", "unit_id") for c in r):
-                        has_topic_col = True
-                        detected_headers = [str(c).strip() for c in r if str(c).strip()]
-                        suggested_tab = t_name
-                        break
-                if suggested_tab:
+        if target_gid:
+            for t in tabs_info:
+                if str(t.get("id")) == str(target_gid):
+                    suggested_tab = t["title"]
                     break
-            except Exception:
-                continue
+
+        # Priority 2: Check worksheets for valid syllabus columns (ignoring metadata tabs)
+        IGNORE_NAMES = {"readme", "instructions", "info", "changelog", "notes", "config", "dashboard"}
+        if not suggested_tab:
+            for t in tabs_info:
+                t_name = t["title"].strip()
+                if t_name.lower() in IGNORE_NAMES:
+                    continue
+                try:
+                    target_ws = sh.worksheet(t_name)
+                    header_vals = target_ws.get_all_values()
+                    for r in header_vals[:5]:
+                        if any(str(c).strip().lower() in ("topic", "unit id", "date taught", "unit_id") for c in r):
+                            has_topic_col = True
+                            detected_headers = [str(c).strip() for c in r if str(c).strip()]
+                            suggested_tab = t_name
+                            break
+                    if suggested_tab:
+                        break
+                except Exception:
+                    continue
 
         # Fallback to first non-ignored tab, or first tab
         if not suggested_tab:

@@ -21,35 +21,13 @@ def _generate_pairing_code(course_code: str) -> str:
 
 
 def _ensure_seed_profiles():
-    """Initializes default course profiles if profiles file does not exist or is empty."""
-    if os.path.exists(PROFILES_FILE) and os.path.getsize(PROFILES_FILE) > 5:
+    """Initializes courses config directory and file if it does not exist."""
+    if os.path.exists(PROFILES_FILE):
         return
 
     os.makedirs(os.path.dirname(PROFILES_FILE), exist_ok=True)
-    units = []
-    curr_file = os.path.join(os.path.dirname(PROFILES_FILE), "curriculum_daa.json")
-    if os.path.exists(curr_file):
-        try:
-            with open(curr_file, "r", encoding="utf-8") as f:
-                d = json.load(f)
-                units = d.get("units", [])
-        except Exception:
-            pass
-
-    default_course = {
-        "id": "daa",
-        "name": "Design & Analysis of Algorithm (DAA)",
-        "code": "DAA",
-        "sheet_id": "1eGBmCNgfjwABNwVQEt_HJfHpT_kQIttR6QGec_IbLJA",
-        "tab_name": "DAA",
-        "teacher_email": "rvkeerthi99@gmail.com",
-        "calendar_id": "rvkeerthi99@gmail.com",
-        "pairing_code": "DAA-0183",
-        "units": units,
-        "curriculum_count": len(units) or 50,
-    }
     with open(PROFILES_FILE, "w", encoding="utf-8") as f:
-        json.dump([default_course], f, indent=2)
+        json.dump([], f, indent=2)
 
 
 def get_user_courses_file() -> str:

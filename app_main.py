@@ -711,11 +711,8 @@ class ClassTrackerMenuBarApp(rumps.App):
                     if url_m:
                         clip_portal = url_m.group(1).rstrip("/")
                         clip_code = url_m.group(2).upper()
-                    # Check 2: Standard pairing code like DAA-0183, OS-7319, CS101-1234 (must have exactly 1 hyphen)
-                    elif re.fullmatch(r'[A-Za-z0-9]{2,8}-[A-Za-z0-9]{3,6}', raw_clip):
-                        clip_code = raw_clip.upper()
-                    # Check 3: Short clean course code like DAA, OS, CS101 (2-8 uppercase letters + optional numbers)
-                    elif re.fullmatch(r'[A-Za-z]{2,8}\d{0,4}', raw_clip) and not raw_clip.isdigit():
+                    # Check 2: Standard pairing code like DAA-0183, OS-7319, CS101-1234 (must have exactly 1 hyphen and 4 digits)
+                    elif re.fullmatch(r'[A-Za-z0-9]{2,8}-\d{4}', raw_clip):
                         clip_code = raw_clip.upper()
             except Exception:
                 pass
@@ -726,7 +723,7 @@ class ClassTrackerMenuBarApp(rumps.App):
 
             # Use native macOS rumps.Window dialog (guaranteed native Cocoa event loop support)
             window = rumps.Window(
-                message="Enter your Course Pairing Code (e.g. DAA-0183) or Course Code (DAA):",
+                message="Enter your Course Pairing Code (e.g. DAA-0183):",
                 title="Class Tracker Activation 🎓",
                 default_text=default_input,
                 ok="Connect Course",
@@ -766,11 +763,11 @@ class ClassTrackerMenuBarApp(rumps.App):
             # Sanitize code: remove inner whitespace and uppercase
             code = code.replace(" ", "").upper()
 
-            # Strict validation: prevent random sentences, code diffs, or invalid symbols
-            if not re.fullmatch(r'[A-Za-z0-9_-]{2,20}', code):
+            # Strict validation: pairing code must be format CODE-XXXX (e.g. DAA-0183)
+            if not re.fullmatch(r'[A-Za-z0-9]{2,8}-\d{4}', code):
                 rumps.alert(
                     title="Invalid Pairing Code",
-                    message=f"'{raw_input[:35]}' does not match a valid course code format.\n\nPlease enter a course code like 'DAA' or pairing code like 'DAA-0183'."
+                    message=f"'{raw_input[:35]}' is not a valid course pairing code format.\n\nPlease enter the exact pairing code shown on your dashboard (e.g. DAA-0183)."
                 )
                 return
 

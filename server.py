@@ -481,19 +481,17 @@ def api_course_detail(course_id: str):
 
 @app.route("/api/pair/<code>", methods=["GET"])
 def api_pair_client(code: str):
-    """Universal macOS App pairing endpoint. Returns payload required to configure the client."""
-    clean_code = (code or "").strip()
+    """Universal macOS App pairing endpoint.
+    Strictly verifies that the provided pairing code matches an active course pairing code.
+    """
+    clean_code = (code or "").strip().upper()
     if not clean_code:
         return jsonify({
             "success": False,
             "error": "Pairing code cannot be blank."
         }), 400
 
-    course = get_course_by_pairing_code(clean_code) or get_course_by_id(clean_code)
-    if not course:
-        prefix = clean_code.split("-")[0].strip().lower()
-        if len(prefix) >= 2:
-            course = get_course_by_id(prefix)
+    course = get_course_by_pairing_code(clean_code)
 
     if not course:
         return jsonify({

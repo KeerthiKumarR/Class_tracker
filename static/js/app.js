@@ -152,11 +152,12 @@ function initUserFriendlyAutoFill() {
 
         chkSync.addEventListener('change', () => {
             if (chkSync.checked) {
-                calendarInput.value = teacherEmailInput.value.trim();
-                calendarInput.readOnly = false;
-                if (calendarHelp) calendarHelp.textContent = 'Auto-synced with instructor email.';
+                if (teacherEmailInput.value.trim()) {
+                    calendarInput.value = teacherEmailInput.value.trim();
+                }
+                if (calendarHelp) calendarHelp.textContent = 'Auto-synced with instructor notification email.';
             } else {
-                if (calendarHelp) calendarHelp.textContent = 'Enter a specific calendar account or identifier if different from email.';
+                if (calendarHelp) calendarHelp.textContent = 'Enter the Google account or calendar address where your class lectures are scheduled.';
             }
         });
     }

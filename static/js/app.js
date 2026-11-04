@@ -235,41 +235,39 @@ function initSheetVerification() {
     });
 }
 
+function formatTabTitle(tabTitle) {
+    if (!tabTitle) return '';
+    const clean = tabTitle.trim();
+    // Insert space before uppercase letters if camelCase or joined words: "DigitalDesign" -> "Digital Design"
+    let spaced = clean.replace(/([a-z])([A-Z])/g, '$1 $2');
+    // Replace underscores or hyphens with spaces: "DIGITAL_DESIGN" -> "DIGITAL DESIGN"
+    spaced = spaced.replace(/[_-]+/g, ' ').trim();
+    // Title Case words
+    return spaced.split(/\s+/).map(w => {
+        if (w.length <= 4 && w === w.toUpperCase()) return w; // Keep short acronyms like DAA, OS, AI
+        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }).join(' ');
+}
+
 function autoPopulateFromTab(tabTitle) {
     if (!tabTitle) return;
     const codeInput = document.getElementById('course-code');
     const nameInput = document.getElementById('course-name');
     const cleanTab = tabTitle.trim();
 
-    // Friendly abbreviations dictionary
-    const knownNames = {
-        'DAA': 'Design & Analysis of Algorithms',
-        'GENAI': 'Generative AI & LLMs',
-        'PROBSTATS': 'Probability & Statistics',
-        'DIGITALDESIGN': 'Digital System Design',
-        'OS': 'Operating Systems',
-        'OOPJAVA': 'Object-Oriented Programming with Java',
-        'DSA': 'Data Structures & Algorithms',
-        'CN': 'Computer Networks',
-        'DBMS': 'Database Management Systems',
-        'ML': 'Machine Learning',
-        'AI': 'Artificial Intelligence',
-    };
-
-    // Auto-fill Course Code if empty or matches previous tab
+    // Auto-fill Course Code directly from the sheet tab name (100% universal across any subject)
     if (codeInput) {
         if (!codeInput.value || codeInput.dataset.autoFilled === 'true') {
-            codeInput.value = cleanTab.toUpperCase();
+            codeInput.value = cleanTab.toUpperCase().replace(/\s+/g, '');
             codeInput.dataset.autoFilled = 'true';
         }
     }
 
-    // Auto-fill Course Title if empty or matches previous auto-fill
+    // Auto-suggest a human-friendly Course Title by formatting the tab name
+    // (e.g. "DigitalDesign" -> "Digital Design", "GenAI" -> "Gen AI", "Physics_101" -> "Physics 101")
     if (nameInput) {
         if (!nameInput.value || nameInput.dataset.autoFilled === 'true') {
-            const upperKey = cleanTab.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            const suggested = knownNames[upperKey] || cleanTab;
-            nameInput.value = suggested;
+            nameInput.value = formatTabTitle(cleanTab);
             nameInput.dataset.autoFilled = 'true';
         }
     }

@@ -118,46 +118,72 @@
                 </div>
 
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label for="course-name">Course Title <span class="req">*</span></label>
-                        <input type="text" id="course-name" placeholder="e.g. Design & Analysis of Algorithms">
-                    </div>
-                    <div class="form-group">
-                        <label for="course-code">Course Identifier / Code <span class="req">*</span></label>
-                        <input type="text" id="course-code" placeholder="e.g. DAA, OS, CS301">
-                        <small class="helper-text">Used for calendar event matching and client activation.</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="teacher-email">Instructor Email</label>
-                        <input type="email" id="teacher-email" placeholder="e.g. instructor@university.edu">
-                        <small class="helper-text">Post-lecture recaps and coverage alerts will be delivered here.</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="calendar-id">Calendar Account or Identifier</label>
-                        <input type="text" id="calendar-id" placeholder="e.g. instructor@university.edu or primary">
-                        <small class="helper-text">Monitored for lecture schedule time slots.</small>
-                    </div>
                     <div class="form-group full-width">
                         <label for="sheet-url">Google Spreadsheet URL or ID <span class="req">*</span></label>
                         <div class="input-with-action">
-                            <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/...">
+                            <input type="text" id="sheet-url" placeholder="Paste your Google Sheets link (e.g. https://docs.google.com/spreadsheets/d/...)">
                             <button type="button" class="btn btn-secondary" id="btn-verify-sheet">
                                 <span class="btn-spinner hidden" id="sheet-verify-spinner"></span>
-                                <span class="btn-text">Verify Access</span>
+                                <span class="btn-text">Connect Spreadsheet</span>
                             </button>
                         </div>
                     </div>
+
+                    <!-- Visual Step-by-Step Share Helper Card -->
                     <div class="form-group full-width bot-share-banner">
                         <div class="bot-share-reminder">
                             <div class="reminder-content">
-                                <span class="reminder-label">Permission Notice:</span>
-                                <span>Ensure both your <strong>Google Sheet</strong> (as Editor) and <strong>Google Calendar</strong> are shared with the service account:</span>
+                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                    <span class="reminder-label">Quick 1-Minute Setup Guide:</span>
+                                    <span style="font-size: 0.78rem; color: #a1a1aa;">Required once for automatic Google Sheets sync</span>
+                                </div>
+                                <div class="easy-steps-row">
+                                    <div class="easy-step-pill">
+                                        <span class="step-badge-num">1</span>
+                                        <span>Click <strong>Share</strong> in Google Sheet</span>
+                                    </div>
+                                    <div class="easy-step-arrow">→</div>
+                                    <div class="easy-step-pill">
+                                        <span class="step-badge-num">2</span>
+                                        <span>Paste Bot Email as <strong>Editor</strong></span>
+                                    </div>
+                                    <div class="easy-step-arrow">→</div>
+                                    <div class="easy-step-pill">
+                                        <span class="step-badge-num">3</span>
+                                        <span>Click <strong>Send / Done</strong></span>
+                                    </div>
+                                </div>
                                 <div class="bot-email-chip">
                                     <code id="bot-service-email">class-tracker-bot@class-tracker-507704.iam.gserviceaccount.com</code>
-                                    <button type="button" class="btn btn-xs btn-outline" id="btn-copy-bot-email">Copy Address</button>
+                                    <button type="button" class="btn btn-xs btn-outline" id="btn-copy-bot-email">Copy Bot Email 📋</button>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="course-name">Course Title <span class="req">*</span></label>
+                        <input type="text" id="course-name" placeholder="Auto-detected from sheet tab or type (e.g. Design & Analysis of Algorithms)">
+                    </div>
+                    <div class="form-group">
+                        <label for="course-code">Course Identifier / Code <span class="req">*</span></label>
+                        <input type="text" id="course-code" placeholder="e.g. DAA, GENAI, OS">
+                        <small class="helper-text">Matches your timetable events and generates your pairing code.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="teacher-email">Instructor Email <span class="req">*</span></label>
+                        <input type="email" id="teacher-email" placeholder="e.g. professor@university.edu">
+                        <small class="helper-text">Also used as your default Google Calendar account.</small>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label for="calendar-id">Calendar Account</label>
+                            <label style="font-size: 0.75rem; color: #a1a1aa; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="chk-sync-calendar-email" checked style="cursor: pointer;"> Same as Email
+                            </label>
+                        </div>
+                        <input type="text" id="calendar-id" placeholder="e.g. professor@university.edu">
+                        <small class="helper-text" id="calendar-help-text">Auto-synced with instructor email. Uncheck above only if using a custom shared calendar.</small>
                     </div>
                 </div>
 
@@ -355,9 +381,14 @@
                     <div class="code-showcase-box">
                         <div class="code-label">COURSE ACTIVATION CODE</div>
                         <div class="code-display" id="pairing-code-display">---</div>
-                        <button type="button" class="btn btn-sm btn-outline" id="btn-copy-code">
-                            Copy Code
-                        </button>
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+                            <button type="button" class="btn btn-sm btn-outline" id="btn-copy-code">
+                                Copy Code 📋
+                            </button>
+                            <a id="btn-one-click-pair" href="#" class="btn btn-sm btn-primary">
+                                Connect in Mac App 🚀
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Client Download Section -->

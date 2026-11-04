@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initWizardStepper();
     initSheetVerification();
+    initUserFriendlyAutoFill();
     initSyllabusIngestion();
     initCourseSave();
     initDashboard();
@@ -135,6 +136,32 @@ function updateStep3Summary() {
 // ==============================================================================
 // 3. Google Sheet Inspection & Verification
 // ==============================================================================
+function initUserFriendlyAutoFill() {
+    const teacherEmailInput = document.getElementById('teacher-email');
+    const calendarInput = document.getElementById('calendar-id');
+    const chkSync = document.getElementById('chk-sync-calendar-email');
+    const calendarHelp = document.getElementById('calendar-help-text');
+
+    // Auto-sync calendar account with instructor email
+    if (teacherEmailInput && calendarInput && chkSync) {
+        teacherEmailInput.addEventListener('input', () => {
+            if (chkSync.checked) {
+                calendarInput.value = teacherEmailInput.value.trim();
+            }
+        });
+
+        chkSync.addEventListener('change', () => {
+            if (chkSync.checked) {
+                calendarInput.value = teacherEmailInput.value.trim();
+                calendarInput.readOnly = false;
+                if (calendarHelp) calendarHelp.textContent = 'Auto-synced with instructor email.';
+            } else {
+                if (calendarHelp) calendarHelp.textContent = 'Enter a specific calendar account or identifier if different from email.';
+            }
+        });
+    }
+}
+
 function initSheetVerification() {
     const btn = document.getElementById('btn-verify-sheet');
     const input = document.getElementById('sheet-url');
@@ -184,7 +211,13 @@ function initSheetVerification() {
 
             tabSelect.addEventListener('change', (e) => {
                 state.selectedTab = e.target.value;
+                autoPopulateFromTab(e.target.value);
             });
+
+            // Auto-populate course name and code from first suggested tab
+            if (data.suggested_tab) {
+                autoPopulateFromTab(data.suggested_tab);
+            }
 
             // Reveal verification box
             const vBox = document.getElementById('sheet-verification-box');
@@ -200,6 +233,46 @@ function initSheetVerification() {
             btn.disabled = false;
         }
     });
+}
+
+function autoPopulateFromTab(tabTitle) {
+    if (!tabTitle) return;
+    const codeInput = document.getElementById('course-code');
+    const nameInput = document.getElementById('course-name');
+    const cleanTab = tabTitle.trim();
+
+    // Friendly abbreviations dictionary
+    const knownNames = {
+        'DAA': 'Design & Analysis of Algorithms',
+        'GENAI': 'Generative AI & LLMs',
+        'PROBSTATS': 'Probability & Statistics',
+        'DIGITALDESIGN': 'Digital System Design',
+        'OS': 'Operating Systems',
+        'OOPJAVA': 'Object-Oriented Programming with Java',
+        'DSA': 'Data Structures & Algorithms',
+        'CN': 'Computer Networks',
+        'DBMS': 'Database Management Systems',
+        'ML': 'Machine Learning',
+        'AI': 'Artificial Intelligence',
+    };
+
+    // Auto-fill Course Code if empty or matches previous tab
+    if (codeInput) {
+        if (!codeInput.value || codeInput.dataset.autoFilled === 'true') {
+            codeInput.value = cleanTab.toUpperCase();
+            codeInput.dataset.autoFilled = 'true';
+        }
+    }
+
+    // Auto-fill Course Title if empty or matches previous auto-fill
+    if (nameInput) {
+        if (!nameInput.value || nameInput.dataset.autoFilled === 'true') {
+            const upperKey = cleanTab.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const suggested = knownNames[upperKey] || cleanTab;
+            nameInput.value = suggested;
+            nameInput.dataset.autoFilled = 'true';
+        }
+    }
 }
 
 // ==============================================================================
@@ -443,6 +516,12 @@ function initCourseSave() {
             // Display in Step 4
             document.getElementById('pairing-code-display').textContent = pairingCode;
             document.getElementById('inst-code-strong').textContent = pairingCode;
+
+            // One-click Mac app pairing link
+            const oneClickBtn = document.getElementById('btn-one-click-pair');
+            if (oneClickBtn) {
+                oneClickBtn.href = `classtracker://pair/${encodeURIComponent(pairingCode)}`;
+            }
 
             showToast(`Course '${code}' configured! Pairing code: ${pairingCode}`, 'success');
             goToStep(4);

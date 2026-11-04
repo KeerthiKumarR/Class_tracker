@@ -581,6 +581,46 @@ textarea::placeholder {
     width: fit-content;
 }
 
+/* User-Friendly Quick Setup Flow Guide */
+.easy-steps-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.easy-step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.step-badge-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: #ffffff;
+    color: #000000;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 50%;
+}
+
+.easy-step-arrow {
+    color: #71717a;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
 .bot-email-chip code {
     font-family: var(--font-mono);
     font-size: 0.78rem;

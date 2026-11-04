@@ -88,11 +88,30 @@ def try_parse_structured_table(raw_text: str, course_code: str = "CRS") -> List[
     day_pattern = re.compile(r'(?:^|\n|[●•\*\-])\s*Day\s+(\d+)[:\s\-]+([^\n○]+)', re.IGNORECASE)
     day_matches = list(day_pattern.finditer(raw_text))
     if len(day_matches) >= 3:
+        # Pre-scan for any explicit "Week X:" headers in the document to track exact syllabus weeks
+        # Handles cases where Week is preceded by newline, whitespace, or inline after sentence
+        week_headers = list(re.finditer(r'(?:^|\n|[.\n\s])\s*Week\s+(\d+)\s*[:\-]', raw_text, re.IGNORECASE))
+
         units = []
         for idx, m in enumerate(day_matches):
             day_num = int(m.group(1))
             topic = m.group(2).strip()
             
+            # Determine actual week from document headers if present, else fallback to 5 days/wk
+            assigned_week = None
+            if week_headers:
+                day_pos = m.start()
+                for w_m in week_headers:
+                    if w_m.start() < day_pos:
+                        try:
+                            assigned_week = int(w_m.group(1))
+                        except Exception:
+                            pass
+                    else:
+                        break
+            if assigned_week is None:
+                assigned_week = (day_num - 1) // 5 + 1
+
             start_pos = m.end()
             end_pos = day_matches[idx + 1].start() if idx + 1 < len(day_matches) else len(raw_text)
             body = raw_text[start_pos:end_pos]
@@ -118,7 +137,7 @@ def try_parse_structured_table(raw_text: str, course_code: str = "CRS") -> List[
                 
             units.append({
                 'unit_id': f'{clean_code}-{day_num}',
-                'week': (day_num - 1) // 5 + 1,
+                'week': assigned_week,
                 'topic': topic,
                 'content': content,
                 'classwork': classwork,

@@ -171,19 +171,45 @@
                         <small class="helper-text">Matches your timetable events and generates your pairing code.</small>
                     </div>
                     <div class="form-group">
-                        <label for="teacher-email">Instructor Email <span class="req">*</span></label>
+                        <label for="teacher-email">Instructor Notification Email <span class="req">*</span></label>
                         <input type="email" id="teacher-email" placeholder="e.g. professor@university.edu">
-                        <small class="helper-text">Also used as your default Google Calendar account.</small>
+                        <small class="helper-text">Where post-lecture recaps and coverage summaries are emailed.</small>
                     </div>
                     <div class="form-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label for="calendar-id">Calendar Account</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                            <label for="calendar-id">Timetable / Calendar Account <span class="req">*</span></label>
                             <label style="font-size: 0.75rem; color: #a1a1aa; cursor: pointer; display: flex; align-items: center; gap: 4px;">
                                 <input type="checkbox" id="chk-sync-calendar-email" checked style="cursor: pointer;"> Same as Email
                             </label>
                         </div>
-                        <input type="text" id="calendar-id" placeholder="e.g. professor@university.edu">
-                        <small class="helper-text" id="calendar-help-text">Auto-synced with instructor email. Uncheck above only if using a custom shared calendar.</small>
+                        <div class="input-with-action">
+                            <input type="text" id="calendar-id" placeholder="e.g. timetable@college.edu or prof.personal@gmail.com">
+                            <a href="https://calendar.google.com/calendar/u/0/r/settings" target="_blank" class="btn btn-secondary btn-xs" id="btn-open-gcal" title="Open Google Calendar Settings in a new tab to view or share your calendar">
+                                Open Google Calendar ↗
+                            </a>
+                        </div>
+                        <small class="helper-text" id="calendar-help-text">
+                            Where your lecture events are scheduled. Uncheck "Same as Email" above if you use a departmental or personal calendar.
+                        </small>
+                    </div>
+
+                    <!-- Direct Calendar Share Guidance Box -->
+                    <div class="form-group full-width" style="margin-top: -6px;">
+                        <details class="cal-guide-details" id="cal-guide-accordion">
+                            <summary class="cal-guide-summary">
+                                <span>📅 How do I connect & share my Google Calendar? (30 seconds)</span>
+                                <span class="toggle-icon">▼</span>
+                            </summary>
+                            <div class="cal-guide-content">
+                                <ol class="cal-steps-list">
+                                    <li>Click <a href="https://calendar.google.com/calendar/u/0/r/settings" target="_blank" style="color: #60a5fa; text-decoration: underline;">Open Google Calendar Settings ↗</a> (or click the gear icon in Google Calendar).</li>
+                                    <li>On the left sidebar, click the calendar containing your classes under <strong>"Settings for my calendars"</strong>.</li>
+                                    <li>Scroll down to <strong>"Share with specific people or groups"</strong> $\rightarrow$ Click <strong>Add people</strong>.</li>
+                                    <li>Paste the bot email: <code style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;">class-tracker-bot@class-tracker-507704.iam.gserviceaccount.com</code> with permission <strong>"See all event details"</strong>.</li>
+                                    <li>If your calendar address is different from your instructor email, paste that calendar address or ID in the field above!</li>
+                                </ol>
+                            </div>
+                        </details>
                     </div>
                 </div>
 

@@ -621,6 +621,64 @@ textarea::placeholder {
     font-weight: 600;
 }
 
+/* Calendar Interactive Accordion Guidance */
+.cal-guide-details {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    transition: background var(--transition-fast);
+}
+
+.cal-guide-details[open] {
+    background: var(--bg-surface);
+    border-style: solid;
+    border-color: var(--border-strong);
+}
+
+.cal-guide-summary {
+    cursor: pointer;
+    font-size: 0.825rem;
+    font-weight: 500;
+    color: #93c5fd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    user-select: none;
+}
+
+.cal-guide-summary::-webkit-details-marker {
+    display: none;
+}
+
+.cal-guide-details[open] .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.toggle-icon {
+    font-size: 0.65rem;
+    transition: transform var(--transition-fast);
+}
+
+.cal-guide-content {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.cal-steps-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.cal-steps-list li {
+    margin-bottom: 6px;
+}
+
 .bot-email-chip code {
     font-family: var(--font-mono);
     font-size: 0.78rem;

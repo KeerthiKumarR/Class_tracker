@@ -791,6 +791,15 @@ function initCopyButtons() {
             showToast('Copied Terminal command: ' + cmd, 'info');
         });
     }
+
+    const copyCmdStep4Btn = document.getElementById('btn-copy-gk-cmd-step4');
+    if (copyCmdStep4Btn) {
+        copyCmdStep4Btn.addEventListener('click', () => {
+            const cmd = 'xattr -cr /Applications/ClassTracker.app';
+            navigator.clipboard.writeText(cmd);
+            showToast('Copied Terminal command: ' + cmd, 'info');
+        });
+    }
 }
 
 // ==============================================================================

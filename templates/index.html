@@ -435,7 +435,7 @@
                         <div class="inst-step">
                             <div class="inst-num">01</div>
                             <h4>Install Application</h4>
-                            <p>Open <code>ClassTracker_Installer.dmg</code> and move <strong>ClassTracker.app</strong> into Applications.</p>
+                            <p>Open <code>ClassTracker_Installer.dmg</code> and drag <strong>ClassTracker.app</strong> into Applications.</p>
                         </div>
                         <div class="inst-step">
                             <div class="inst-num">02</div>
@@ -447,6 +447,32 @@
                             <h4>Activate</h4>
                             <p>Enter code <strong id="inst-code-strong">YOUR-CODE</strong> when prompted. The application begins monitoring your timetable.</p>
                         </div>
+                    </div>
+
+                    <!-- Apple Gatekeeper / Security Bypass Notice -->
+                    <div class="gatekeeper-notice-box">
+                        <div class="gk-header">
+                            <span class="gk-icon">🛡️</span>
+                            <div>
+                                <h4>macOS First-Launch Security Note (Unsigned App)</h4>
+                                <p class="gk-subtitle">Class Tracker is open-source and built for academic use. Because it is distributed independently outside the Apple App Store, macOS Gatekeeper may display: <em>"ClassTracker cannot be opened because Apple cannot check it for malicious software"</em>.</p>
+                            </div>
+                        </div>
+                        <div class="gk-options-grid">
+                            <div class="gk-option-card">
+                                <strong>Method 1: 1-Click Terminal Bypass (Instant)</strong>
+                                <p>Open Terminal and run this safe command to approve the app:</p>
+                                <div class="gk-command-row">
+                                    <code>xattr -cr /Applications/ClassTracker.app</code>
+                                    <button type="button" class="btn btn-xs btn-outline" id="btn-copy-gk-cmd-step4">Copy Command 📋</button>
+                                </div>
+                            </div>
+                            <div class="gk-option-card">
+                                <strong>Method 2: Mac System Settings (No Terminal)</strong>
+                                <p>Go to <strong>Apple Menu  → System Settings → Privacy & Security</strong>. Scroll down and click <strong>"Open Anyway"</strong> next to Class Tracker.</p>
+                            </div>
+                        </div>
+                        <small class="gk-safe-tag">✅ 100% safe & harmless — removes macOS quarantine flag on your local machine.</small>
                     </div>
 
                     <div class="card-footer center">
@@ -554,10 +580,13 @@
                             Download ClassTracker.dmg (42 MB)
                         </a>
                         <button type="button" class="btn btn-secondary" id="btn-copy-command">
-                            Copy Gatekeeper Terminal Command
+                            Copy Gatekeeper Command 📋
                         </button>
                     </div>
                     <small class="helper-text">macOS 12 Monterey, macOS 13 Ventura, macOS 14 Sonoma, macOS 15 Sequoia (Apple Silicon & Intel)</small>
+                    <div style="margin-top: 12px; font-size: 0.78rem; color: #a1a1aa; line-height: 1.5; background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                        🛡️ <strong>Note:</strong> If macOS displays an "unverified developer" prompt, run the copied command (<code>xattr -cr /Applications/ClassTracker.app</code>) in Terminal or click <em>System Settings → Privacy & Security → Open Anyway</em>. It is completely safe and harmless.
+                    </div>
                 </div>
 
                 <div class="app-window-mockup">
